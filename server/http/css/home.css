@@ -1,0 +1,70 @@
+#header {
+	background: url("../img/header_bg_1.png") repeat;
+	color: #FFF;
+	height: 100px;
+}
+
+#body-container {
+	padding-top: 20px;
+}
+
+#repository-objects {
+	margin-top: 10px;
+}
+
+.git-object {
+	border: solid 1px #000;
+	cursor: pointer;
+	display: inline-table;
+	margin-right: 10px;
+	margin-bottom: 10px;
+
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+.git-object .content {
+	padding: 4px;
+}
+
+.git-object.active .title {
+	background-color: #08c;	
+}
+
+.git-object .title {
+	border-top-left-radius: 6px;
+	border-top-right-radius: 6px;
+	background-color: #AAA;
+	font-weight: bold;
+	overflow: hidden;
+	padding: 4px;
+	white-space: nowrap;
+}
+
+.repository-object {
+	width: 125px;
+	height: 150px;
+}
+
+.reference-object {
+	width: 125px;
+	height: 75px;
+}
+
+.commit-object.git-object {
+	width: 100%;
+	margin-bottom: 20px;
+}
+
+.repository-object .content {
+	overflow: hidden;
+}
+
+#commit-objects {
+	height: 600px;
+	overflow-y: scroll;
+}

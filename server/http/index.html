@@ -1,0 +1,118 @@
+<html>
+	<head>
+		<script type="text/javascript" data-main="js/home.js" src="js/lib/require/require.js"></script>
+
+		<link href="css/home.css" rel="stylesheet" type="text/css">
+		<link href="js/lib/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+		<link href="js/lib/jquery/jquery-ui/css/ui-lightness/jquery-ui-1.10.3.custom.min.css" rel="stylesheet" type="text/css">
+	</head>
+	<body>
+		<div id="window-content">		
+
+			<!-- Header -->
+			<div id="header" class="row-fluid">
+				<div class="span12 text-center">
+					<h1>Git Node</h1>
+				</div>
+			</div>
+
+			<!-- Body -->
+			<div id="body-container" class="container-fluid">		
+				<div id="body" class="row-fluid">
+					<div id="nav" class="span2 text-center well">
+						<ul class="nav nav-pills nav-stacked">
+							<li id="home-nav" class="active"><a href="#">Home</a></li>							
+						</ul>
+					</div>
+
+					<div id="content" class="span10 text-left well">
+						<div id="alert-bar"></div>						
+						<a id="add-repo-btn" class='btn' href="#">Add Repository</a>
+
+						<div id="repository-objects-container" class="hide">
+							<h2>Repositories</h2>						
+							<div id="repository-objects" class="well"></div>
+						</div>
+
+						<div class="row-fluid">							
+							<!-- Repository References -->
+							<div id="repository-references-container" class="hide span6">
+								<h3>Repository References</h3>
+								<div id="repository-references" class="well">
+									
+									<h4>Local</4>
+									<div id="local-references" class="well git-references"></div>
+
+									<h4>Remote</h4>
+									<div id="remote-references" class="well git-references"></div>
+
+									<h4>Tags</h4>
+									<div id="tag-references" class="well git-references"></div>
+								</div>
+							</div>
+
+							<!-- Commit History -->
+							<div id="commit-history-container" class="hide span6">
+								<h3>Commit History</h3>
+								<div id="commit-objects" class="well text-center"></div>
+							</div>
+						</div>						
+					</div>				
+				</div>
+			</div>
+		</div>
+
+		<!-- MODALS -->
+		<div id="repo-info-modal" class="modal hide fade">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+				<h3 class="add">Add Repository</h3>
+				<h3 class="edit">Edit Repository</h3>
+			</div>
+			<div class="modal-body form-horizontal">
+				<div class="control-group">
+					<label id="repo-alias-label" class="control-label" for="repo-alias">Repository Alias</label>
+
+					<div class="controls">
+						<input id="repo-alias"></input>
+					</div>
+				</div>
+
+				<div class="control-group">
+					<label id="repo-path-label" class="control-label" for="repo-path">Local Path</label>
+					<div class="controls">
+						<input id="repo-path"></input>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<a href="#" class="btn" data-dismiss="modal">Cancel</a>
+				<a id="add-repo-path-btn" href="#" class="btn btn-primary add">Add</a>
+				<a id="edit-repo-path-btn" href="#" class="btn btn-primary edit">Edit</a>
+			</div>
+		</div>
+
+		<div id="repo-remove-confirm-modal" class="modal hide fade">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+				<h3 class="add">Remove Repository</h3>
+			</div>
+			<div class="modal-body form-horizontal">
+				<p>Are you sure you want to remove the repository?</p>
+			</div>
+			<div class="modal-footer">
+				<a href="#" class="btn" data-dismiss="modal">No</a>				
+				<a id="remove-repo-path-btn" href="#" class="btn btn-primary" data-dismiss="modal">Yes</a>
+			</div>
+		</div>
+
+		<div id="repository-object-context-menu">
+			<ul class="dropdown-menu" role="menu">
+				<li><a tabindex="-1" href="#" id="update-repo-context">Update from Upstream</a></li>
+				<li><a tabindex="-1" href="#" id="edit-repo-context">Edit</a></li>
+				<li><a tabindex="-1" href="#" id="remove-repo-context">Remove</a></li>
+			</ul>
+		</div>
+
+	</body>
+</html>
