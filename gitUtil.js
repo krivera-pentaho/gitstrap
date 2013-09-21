@@ -1,5 +1,5 @@
 var fs = require("fs");
-var git = require("../../");
+var git = require("./git");
 var path = require("path");
 var sort = git.RevWalk.Sort;
 

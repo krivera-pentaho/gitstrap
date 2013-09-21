@@ -3,11 +3,10 @@
  */
 
 var fs = require("fs");
-var git = require("../");
-var gitUtil = require("../server/node/gitUtil");
-var cfgUtil = require("../server/node/cfgUtil");
+// var gitUtil = require("../gitUtil");
+var cfgUtil = require("../cfgUtil");
 
-var nodeRouter = require("../server/node/node-router");
+var nodeRouter = require("../node-router");
 var server = nodeRouter.getServer();
 var url = require("url");
 
