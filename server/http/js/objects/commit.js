@@ -36,8 +36,8 @@ define(['jquery', 'jquery-ui', 'handlebars', 'backbone'], function() {
 						
 					$.get(getBaseUrl("/git/diffs?path=" + self.model.get("path") + 
 							"&branch=" + self.model.get("branch") + 
-							"&sha1=" + $this.attr("commit") +
-							"&sha2=" + $this.next().attr("commit")), 
+							"&sha1=" + $this.next().attr("commit") +
+							"&sha2=" + $this.attr("commit")), 
 						function success(data){
 							$(".diff-names-object").remove();
 							var diffNames = eval("(" + data + ")");
