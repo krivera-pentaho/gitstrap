@@ -53,7 +53,8 @@ require(['jquery'], function() {
 						});
 
 						// Create and add "load more buttons"
-						$("<a class='btn active' href='#'>Load 10 More</a>")
+						$("#load-more").remove();
+						$("<a class='btn active' href='#' id='load-more'>Load 10 More</a>")
 							.bind("click",
 								function(){
 									$(this).remove();

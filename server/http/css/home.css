@@ -77,3 +77,7 @@
 .repository-object, .local-reference-object, .commit-object {
 	cursor: pointer;
 }
+
+.full-file-path {
+	font-size: small;
+}

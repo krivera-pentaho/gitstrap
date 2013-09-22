@@ -6,7 +6,12 @@ define(['jquery', 'jquery-ui', 'handlebars', 'backbone'], function() {
 
 	var diffNameObjectTemplate = Handlebars.compile(
 		"<tr class='{{modification}}'>" +
-			"<td class='diff-name-object'>{{file}}</td>" +
+			"<td class='diff-name-object'>" +
+				"{{fileName}}" +
+				"<div class='full-file-path'>" +
+					"{{file}}" +
+				"</div>" +
+			"</td>" +
 		"</tr>");
 
 	var Model = Backbone.Model.extend();
@@ -57,9 +62,14 @@ define(['jquery', 'jquery-ui', 'handlebars', 'backbone'], function() {
 									case "A" : modification = "success"; break;
 								}
 
+
+
+								var fullFile = diffName[1];
+								var fileName = fullFile.replace(new RegExp("(\\S+/)*").exec(fullFile)[0], "");
 								var diffNameObject = $(diffNameObjectTemplate({
 									modification: modification,
-									file: diffName[1]
+									fileName: fileName,
+									file: fullFile
 								}));
 								diffNamesObject.append(diffNameObject);
 							});
