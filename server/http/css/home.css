@@ -10,11 +10,11 @@
 
 #repository-objects {
 	margin-top: 10px;
+	white-space: nowrap;
 }
 
 .git-object {
 	border: solid 1px #000;
-	cursor: pointer;
 	display: inline-table;
 	margin-right: 10px;
 	margin-bottom: 10px;
@@ -67,4 +67,13 @@
 #commit-objects {
 	height: 600px;
 	overflow-y: scroll;
+	overflow-x: hidden;
+}
+
+.diff-name-object {
+	word-break: break-all;	
+}
+
+.repository-object, .local-reference-object, .commit-object {
+	cursor: pointer;
 }

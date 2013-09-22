@@ -1,7 +1,7 @@
 var fs = require("fs");
 var git = require("./git");
 var path = require("path");
-var sort = git.RevWalk.Sort;
+// var sort = git.RevWalk.Sort;
 
 // Determines if the provided directory is a cloned git repository
 var isGitDir = exports.isGitDir = function(path) {	
@@ -13,142 +13,59 @@ var updateFromUpstream = exports.updateFromUpstream = function(path) {
 
 }
 
-var getCurrentBranch = exports.getCurrentBranch = function(gitPath, callback) {
-	git.Repo.open(path.resolve(gitPath, '.git'), function(error, repo) {
-		if (error) throw error;	  
-		
-		var refs = repo.getReferences(1, function(error, references) {
-			if (error) throw error;	  
-			console.log(references);
-		});		
+var getCurrentBranch = exports.getCurrentBranch = function(path, callback) {
+	git.tree(path, function(tree) {
+		callback(tree.current);
 	});
 }
 
-var getReferences = exports.getReferences = function(gitPath, callback) {
-	git.Repo.open(path.resolve(gitPath, '.git'), function(err, repo) {
-		if (err) throw err;
-
-		repo.getReferences(1, function(error, references) {
-			if (error) throw error;	  
-
-			// for (var i = 0; i < references.length; i++) {
-
-			// 	repo.getReference(references[i], function(err, reference){
-			// 		console.log(reference.target());	
-			// 	})
-				
-			// }
-			
-			callback(references.toString());
-		});		
-	})
-}
-
-var getCommits = exports.getCommits = function(gitPath, gitBranch, results, callback) {
-	git.Repo.open(path.resolve(gitPath, '.git'), function(err, repo) {
-		if (err) throw err;
-		
-		repo.getBranch(gitBranch, function(err, branch) {
-
-			var history = branch.history(sort.Time);
-
-			var stop = 0;
-			var commits = [];
-			var madeCallback = false;
-			 // History emits 'commit' event for each commit in the branch's history
-		    history.on('commit', function(commit) {
-		    	// Stop after so many results
-		    	if (stop++ > results) {
-
-		    		if (!madeCallback){
-		    			callback(JSON.stringify(commits));
-		    			madeCallback = true;
-		    		}
-					
-					return;
-				}			
-
-		    	var commitJson = {};
-				commitJson['sha'] = 	commit.sha();
-				commitJson['author'] = 	commit.author().name() + ' <' + commit.author().email() + '>';
-				commitJson['date'] = 	commit.date();
-				commitJson['message'] = commit.message();
-				commits.push(commitJson);
-
-				// commit.getTree(function(err, tree){
-				// 	tree.walk().on('entry', function(entry){
-				// 		if (entry.isFile()) {
-
-				// 			entry.getBlob(function(err, blob){
-				// 				// console.log(entry.path());
-								
-				// 			})							
-				// 		}
-						
-				// 	}).start();
-				// });
-
-
-
-				
-		    }).start();
-		});
+var getReferences = exports.getReferences = function(path, callback) {
+	git.references(path, function(references){
+		callback(references.toString());
 	});
 }
 
-var getDiffs = exports.getDiffs = function(gitPath, gitBranch, sha, callback) {
-	git.Repo.open(path.resolve(gitPath, '.git'), function(err, repo) {
-		if (err) throw err;	
-		
-		repo.getBranch(gitBranch, function(err, branch) {
-			var history = branch.history(sort.Time);		
+var getCommits = exports.getCommits = function(path, branch, results, callback) {
+	_switchAndMaintainBranch(branch, function(checkoutCallback) {
+		git.history(path, results, function(history) {
+			checkoutCallback(function() {
+				callback(JSON.stringify(history));		
+			});
+		});		
+	});	
+}
 
-		    history.on('commit', function(commit) {				
-		    	if (commit.sha() == sha) {
-		    		commit.getDiff(function(err, diffList){
-		    			diffList.forEach(function(diff){
-		    				 diff.patches().forEach(function(patch) {
-						          console.log("diff", patch.oldFile().path(), patch.newFile().path());
-						      });
-		    			})
-		    		})
-		    		// commit.getTree(function(err, tree){
-
-	    			// var count = 0;
-	    			// commit.history(sort.Time)
-	    			// 	.on('commit', function(commit) {
-
-	    			// 		if (count == 1) {
-		    		// 			commit.getTree(function(err, compareTree){
-		    		// 				tree.diff(compareTree, function(err, diffList){
-		    							
-		    		// 					diffList.patches()
-		    		// 				});
-		    		// 			})			    					
-	    			// 		}
-
-	    			// 		count++;
-		    				
-		    		// 	}).start();
-		    		// });		    		
-		    	}				
-		    }).start();			
+var getDiffNames = exports.getDiffNames = function(path, branch, sha1, sha2, callback) {
+	_switchAndMaintainBranch(branch, function(checkoutCallback) {
+		git.diffNames(path, sha1, sha2, function(diffNames) {
+			checkoutCallback(function() {
+				callback(JSON.stringify(diffNames));
+			});
 		});
+	});	
+}
 
-		// commit.getDiff(function(error, diffList) {
-		 //      if (error) throw error;
+var checkoutBranch = exports.checkoutBranch = function(path, branch, callback) {
+	console.log(path  + " " + branch);
+	git.checkout(path, branch, function(){
+		callback();
+	});
+}
 
-		 //      diffList.forEach(function(diff) {
-		 //        diff.patches().forEach(function(patch) {
-		 //          console.log("diff", patch.oldFile().path(), patch.newFile().path());
-		 //          patch.hunks().forEach(function(hunk) {
-		 //            console.log(hunk.header().trim());
-		 //            hunk.lines().forEach(function(line) {
-		 //              console.log(String.fromCharCode(line.lineOrigin) + line.content.trim());
-		 //            });
-		 //          });
-		 //        });
-		 //      });
-		 //    });
+function _switchAndMaintainBranch(branch, action) {
+	
+	// Get current branch
+	getCurrentBranch(path, function(currentBranch) {
+
+		// Checkout the branch we want to see the history of
+		git.checkout(path, branch, function() {
+
+			// Perform the action after switching branches
+			action(function(callback) {
+
+				// Re-checkout branch
+				git.checkout(path, currentBranch, callback);
+			});		
+		});	
 	});
 }

@@ -62,21 +62,21 @@ module.exports = (function() {
 	 * history() - public
 	 * set process to run in specified directory and passes an array of commit objects into the callback
 	 */
-	function history(path, callback) {
+	function history(path, n, callback) {
 		// create output string
 		var output = '[',
 		    command = '';
 		// create bash command
-			command += 'git log --pretty=format:\'{';
-			command += '"commit": "%H",';
-		 	command += '"author": "%an <%ae>",';
-			command += '"date": "%ad",';
-			command += '"message": "%s"';
+			command += 'git log -n ' + n + ' --pretty=format:\'{';
+			command += '`commit`: `%H`,';
+		 	command += '`author`: `%an <%ae>`,';
+			command += '`date`: `%ad`,';
+			command += '`message`: `%s`';
 			command += '},\'';
 		// if the path is a valid repository, get the commit log
 		if (repository(path)) {
 			// execute bash command
-			exec(command, function(err, stdout, stderr) {
+			exec(command, {maxBuffer : 200000*1024}, function(err, stdout, stderr) {
 				// if error, pass error object into callback
 				if (err || stderr) {
 					console.log(err || stderr);
@@ -88,8 +88,18 @@ module.exports = (function() {
 				// if successful, trim the trailing comma, and close output string
 				// then parse the JSON object and pass into callback
 				} else if (stdout) {
+
 					output += stdout.substring(0, stdout.length - 1);
 					output += ']';
+					
+					while (output.search("\"") > -1) {
+						output = output.replace("\"", "'");
+					}
+
+					while (output.search("`") > -1) {
+						output = output.replace("`", "\"");
+					}
+
 					output = JSON.parse(output);
 					if (callback) {
 						process.chdir(back);
@@ -881,6 +891,79 @@ module.exports = (function() {
 			});
 		}
 	}
+
+	function references(path, callback) {
+		var cmd = 'git show-ref';
+		if (repository(path)) {
+			exec(cmd, function(err, stdout, stderr) {
+				if (err || stderr) {
+					console.log(err || stderr);
+					if (callback) {
+						process.chdir(back);
+						callback.call(this, {
+							error : err || stderr
+						});
+					}
+				// all is good
+				} else {
+					var list = [],
+					    parseme = stdout.split('\n');
+					
+					parseme.forEach(function(val, key) {
+
+						if (val) {
+							list.push(val.split(' ')[1]);
+						}
+					});
+
+					if (callback) {						
+						callback.call(this, list);
+						process.chdir(back);
+					}
+				}
+			});
+		} else {
+			callback.call(this, {
+				error : 'Invalid repository'
+			});
+		}
+	}
+
+	function diffNames(path, commitA, commitB, callback) {
+		var cmd = 'git diff --name-status ' + commitA + " " + commitB;
+		if (repository(path)) {
+			exec(cmd, function(err, stdout, stderr) {
+				if (err || stderr) {
+					console.log(err || stderr);
+					if (callback) {
+						process.chdir(back);
+						callback.call(this, {
+							error : err || stderr
+						});
+					}
+				// all is good
+				} else {
+					var list = [],
+					    parseme = stdout.split('\n');
+					
+					parseme.forEach(function(val, key) {
+						if (val) {
+							list.push(val.split('\t'));
+						}
+					});
+
+					if (callback) {						
+						callback.call(this, list);
+						process.chdir(back);
+					}
+				}
+			});
+		} else {
+			callback.call(this, {
+				error : 'Invalid repository'
+			});
+		}
+	}
 	
 	// public methods
 	return {
@@ -900,7 +983,9 @@ module.exports = (function() {
 		pull : pull,
 		reset : reset,
 		merge : merge,
-		clone : clone
+		clone : clone,
+		references : references,
+		diffNames : diffNames
 	};
   
 })();

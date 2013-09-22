@@ -3,8 +3,10 @@
  */
 
 var fs = require("fs");
-// var gitUtil = require("../gitUtil");
+var gitUtil = require("../gitUtil");
 var cfgUtil = require("../cfgUtil");
+var httpDir = __dirname;
+
 
 var nodeRouter = require("../node-router");
 var server = nodeRouter.getServer();
@@ -35,7 +37,7 @@ server.get("/git/isGitDir", function (request, response) {
 	}	
 });
 
-// Text File loader
+// File loader
 server.get(new RegExp("^/((\\S+/)*\\S+(\\.\\S+))$"), function (request, response, match, match1, ext) {	
 	
 	var contentType = nodeRouter.mime.getMime(ext);	
@@ -51,16 +53,16 @@ server.get(new RegExp("^/((\\S+/)*\\S+(\\.\\S+))$"), function (request, response
 // Get config properties
 server.get("/cfg/all", function(request, response) {
 	response.writeHead(200, {"Content-Type": nodeRouter.mime.getMime(".json")});
-	response.end(JSON.stringify(cfgUtil.read.properties()));
+	response.end(JSON.stringify(cfgUtil.read.properties(httpDir)));
 });
 
 // Get Single cfg property
-server.get("/cfg/single", function(request, response) {
+server.get("/cfg/single", function(request, response) {		
 	var queryData = url.parse(request.url, true).query;
 	var property = queryData.property;
 
 	response.writeHead(200, {"Content-Type": nodeRouter.mime.getMime(".txt")});
-	response.end(cfgUtil.read.property(property));
+	response.end(cfgUtil.read.property(property, httpDir));
 });
 
 // Put a single property 
@@ -71,7 +73,7 @@ server.post("/cfg/single", function(request, response) {
 
 	var statusCode = 200;
 	try {
-		cfgUtil.write.property(key, value);	
+		cfgUtil.write.property(key, value, httpDir);	
 	} catch(e) {
 		statusCode = 500;
 	}
@@ -87,7 +89,7 @@ server.post("/cfg/many", function(request, response) {
 	
 	var statusCode = 200;
 	try {
-		cfgUtil.write.properties(propertiesJson);	
+		cfgUtil.write.properties(propertiesJson, httpDir);	
 	} catch(e) {
 		statusCode = 500;
 	}
@@ -102,10 +104,21 @@ server.get("/git/branch/current", function(request, response) {
 	var path = queryData.path;
 
 	gitUtil.getCurrentBranch(path, function(branchName) {
-		console.log(branchName);
+		response.writeHead(200);
+		response.end(branchName);
+	});
+});
+
+// checkout a branch
+server.post("/git/branch/checkout", function(request, response){
+	var queryData = url.parse(request.url, true).query;
+	var path = queryData.path;
+	var branch = queryData.branch;
+
+	gitUtil.checkoutBranch(path, branch, function(){
 		response.writeHead(200);
 		response.end();
-	});
+	})
 });
 
 // Get the list of references in a repository
@@ -114,7 +127,7 @@ server.get("/git/refs", function(request, response){
 	var path = queryData.path;
 
 	// Get the references from a git repository
-	gitUtil.getReferences(path, function(references){
+	gitUtil.getReferences(path, function(references){		
 		response.writeHead(200);
 		response.end(references);
 	});
@@ -134,22 +147,23 @@ server.get("/git/commits", function(request, response){
 	});
 });
 
-// Get diffs of a branch from its oid
+// Get diffs of a branch from its sha ids
 server.get("/git/diffs", function(request, response){
 	var queryData = url.parse(request.url, true).query;
 	var path = queryData.path;
 	var branch = queryData.branch;
-	var sha = queryData.sha;
+	var sha1 = queryData.sha1;
+	var sha2 = queryData.sha2;
 
 	// Get the references from a git repository
-	gitUtil.getDiffs(path, branch, sha, function(diffs){
+	gitUtil.getDiffNames(path, branch, sha1, sha2, function(diffs){
 		response.writeHead(200);
 		response.end(diffs);
 	});
 });
 
 function readHttpFile(path, encoding, callback) {
-	var url = "http/" + path;
+	var url = httpDir + "/http/" + path;
 	fs.readFile(url, encoding, callback);
 }
 

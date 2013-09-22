@@ -1,39 +1,39 @@
 var fs = require('fs');
 
-var cfgPath = "http/cfg/data.cfg";
+var cfgPath = "/http/cfg/data.cfg";
 
 var read = exports.read = {
-	properties: function() {
-		var file = fs.readFileSync(cfgPath, 'utf8');
+	properties: function(serverDir) {
+		var file = fs.readFileSync(serverDir + cfgPath, 'utf8');
 		return toJSON(file);
 	},
 
-	property: function(property) {
-		return read.properties()[property];
+	property: function(property, serverDir) {
+		return read.properties(serverDir)[property];
 	}
 };
 
 var write = exports.write = {
-	properties: function(propertyMap) {
-		var cfg = read.properties();
+	properties: function(propertyMap, serverDir) {
+		var cfg = read.properties(serverDir);
 
 		// Add and overwrite values
 		for (key in propertyMap) {
 			cfg[key] = propertyMap[key];
 		}
 
-		write._commit(cfg);
+		write._commit(cfg, serverDir);
 	},
 
-	property: function(key, val) {
-		var cfg = read.properties();
+	property: function(key, val, serverDir) {
+		var cfg = read.properties(serverDir);
 		cfg[key] = val;
-		write._commit(cfg);
+		write._commit(cfg, serverDir);
 	},
 
-	_commit: function(json) {
+	_commit: function(json, serverDir) {
 		var cfg = toCfgFile(json);
-		fs.writeFileSync(cfgPath, cfg);
+		fs.writeFileSync(serverDir + cfgPath, cfg);
 	}
 };
 

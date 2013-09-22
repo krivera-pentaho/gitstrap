@@ -67,7 +67,7 @@ require(['jquery'], function() {
 
 			if (alias == "" || path == "") {
 				var alert = buildAlert("All values must be filled in", "WARN");
-				$("#repo-info-modal .modal-body").append(alert);
+				$("#alert-bar").append(alert);
 				return false;
 			}
 
@@ -193,51 +193,77 @@ require(['jquery'], function() {
 					} else {
 						$repositoryObjectsContainer.hide()
 					}			
+			
+					$(repos).each(function(i, repo) {
 
-					for (var i = 0; i < repos.length; i++) {
-						var repo = repos[i];
+						// Get currently checked out branch
+						$.get(getBaseUrl("/git/branch/current?path=" + repo.path),
+							function success(branch){
+								var $repoObj = $(repositoryObjectTemplate({
+									"branch" : branch,
+									"title": repo.alias,
+									"path": repo.path
+								}));
 
-						var $repoObj = $(repositoryObjectTemplate({
-							"title": repo.alias,
-							"path": repo.path
-						}));
+								$repoObj
+									.attr("alias", repo.alias)
+									.attr("path", repo.path)
+									.droppable({
+										accept: function(draggable){											
+											return repo.path == draggable.attr("path") && 
+												draggable.attr("reference") != branch && 
+												draggable.hasClass("reference-object");
+										},
+      									hoverClass: "ui-state-highlight",
+      									drop: function(event, ui) { 
+      										var droppedBranch = ui.helper.attr("reference");
 
-						$repoObj.attr("alias", repo.alias);
-						$repoObj.attr("path", repo.path);
+      										// Checkout branch on drop
+      										$.post(getBaseUrl("/git/branch/checkout" +
+      											"?path=" + repo.path +
+      											"&branch=" + droppedBranch), 
+      											function success() {
+	      											updateRepositoryObjects();
+	      											$("#alert-bar").append(buildAlert("Switched " + 
+	      												repo.alias + " to " + droppedBranch, "SUCCESS"));
+	      										});
+      									}
+									});
 
-						$repositoryObjects.append($repoObj);
+								$repositoryObjects.append($repoObj);
 
-						// Bind click for repo objects
-						$repoObj.bind("click contextmenu", function() {
-							var $this = $(this);
+								// Bind click for repo objects
+								$repoObj.bind("click contextmenu", function() {
+									var $this = $(this);
 
-							if ($this.hasClass("active")) {
-								return;
-							}
+									if ($this.hasClass("active")) {
+										return;
+									}
 
-							$(".repository-object").removeClass("active");
-							$this.addClass("active");
+									$(".repository-object").removeClass("active");
+									$this.addClass("active");
 
-							updateReferences($this.attr("alias"), $this.attr("path"));
-							$("#commit-history-container").hide();
-						});
+									updateReferences($this.attr("alias"), $this.attr("path"));
+									$("#commit-history-container").hide();
+								});
 
-						// Add ContextMenu controls
-						$repoObj.contextmenu({
-							onItem: function(e, item) {
-								var $activeRepo = $(".repository-object.active");
-								var alias = $activeRepo.attr("alias");
-								var path = $activeRepo.attr("path")
-								var id = $(item).attr("id");
+								// Add ContextMenu controls
+								$repoObj.contextmenu({
+									onItem: function(e, item) {
+										var $activeRepo = $(".repository-object.active");
+										var alias = $activeRepo.attr("alias");
+										var path = $activeRepo.attr("path")
+										var id = $(item).attr("id");
 
-								switch (id) {
-									case "remove-repo-context": repositoryRemoveDialog(); break;
-									case "edit-repo-context": showEditRepoModal(alias, path); break;
-									case "update-repo-context": break;
-								}
-							}
-						});
-					}
+										switch (id) {
+											case "remove-repo-context": repositoryRemoveDialog(); break;
+											case "edit-repo-context": showEditRepoModal(alias, path); break;
+											case "update-repo-context": break;
+										}
+									}
+								});
+							});						
+					});
 				});
 		};
 		updateRepositoryObjects();
@@ -258,24 +284,17 @@ require(['jquery'], function() {
 					var remoteRef = "refs/remotes/"
 
 					var $tagRefs = $("#tag-references");
-					var tagRef = "refs/tags/"
+					var tagRef = "refs/tags/"				
 
-					for (var i = 0; i < refs.length; i++) {
-						var ref = refs[i];						
-
+					$(refs).each(function(i, ref){
 						var appendTo;
 						var title = ref;
-						var onclick;
+						var isLocalRef = false;
+
 						if (ref.search(localRef) != -1) {
+							isLocalRef = true;
 							appendTo = $localRefs;
 							title = title.replace(localRef, "");
-							onclick = function() {
-								$this = $(this);
-								$this.siblings().removeClass("active");
-								$this.addClass("active");
-								
-								updateCommits(path, title, 10);
-							}
 						} else if (ref.search(remoteRef) != -1) {
 							appendTo = $remoteRefs;
 							title = title.replace(remoteRef, "");
@@ -283,15 +302,31 @@ require(['jquery'], function() {
 							appendTo = $tagRefs;
 							title = title.replace(tagRef, "");
 						} else {
-							continue;
+							return;
 						}
 
 						var referenceObject = $(referenceObjectTemplate({
-							title: title
-						}));
-						referenceObject.bind("click", onclick);
+							title: title,
+							isLocalReference: isLocalRef
+						})).attr("reference", title).attr("path", path);
+
+						if (isLocalRef) {
+							referenceObject
+								.bind("click contextmenu", function() {
+									$this = $(this);
+									$this.siblings().removeClass("active");
+									$this.addClass("active");
+									
+									var branch = $this.find(".title").attr("title");
+									updateCommits(path, branch, 10);
+								})
+								
+								.draggable({ revert : true 	})
+								.addClass("local-reference-object");	
+						}
+						
 						appendTo.append(referenceObject);
-					}
+					});
 				});
 		}
 
@@ -306,29 +341,54 @@ require(['jquery'], function() {
 					progress.remove();					
 					var commits = eval("(" + data + ")");
 					
-					for (var i = 0; i < commits.length; i++) {
-						var commit = commits[i];
+					$(commits).each(function(i, commit) {
 						
 						var commitObject = $(commitObjectTemplate({
-							title: commit.sha,
+							title: commit.commit,
 							date: commit.date,
 							author: commit.author,
 							message: commit.message
 						}))
-						.attr("sha", commit.sha)
+						.attr("commit", commit.commit)
 						.bind("click", function(){
 							$this = $(this);
 							$this.siblings().removeClass("active");
 							$this.addClass("active");
 								
-							$.get(getBaseUrl("/git/diffs?path=" + path + "&branch=" + branch + "&sha=" + $(this).attr("sha")), 
+							$.get(getBaseUrl("/git/diffs?path=" + path + 
+									"&branch=" + branch + 
+									"&sha1=" + $this.attr("commit") +
+									"&sha2=" + $this.next().attr("commit")), 
 								function success(data){
+									$(".diff-names-object").remove();
+									var diffNames = eval("(" + data + ")");
+
+									var diffNamesObject = $(diffNamesObjectTemplate({}));
+
+									for (var i = 0; i < diffNames.length; i++) {
+										var diffName = diffNames[i];
+										var modification;
+
+										switch(diffName[0]) {
+											case "M" : modification = "warning"; break;
+											case "D" : modification = "error"; break;
+											case "A" : modification = "success"; break;
+										}
+
+										var diffNameObject = $(diffNameObjectTemplate({
+											modification: modification,
+											file: diffName[1]
+										}));
+										diffNamesObject.append(diffNameObject);
+									}
+
+									$this.append(diffNamesObject);
 							 	});
 
 						});
 
 						$("#commit-objects").append(commitObject);
-					}
+					});
 
 					$("#commit-objects").append(
 						$(loadMoreCommitsBtn).bind("click",
@@ -359,7 +419,7 @@ require(['jquery'], function() {
 			"</div>");
 
 		var referenceObjectTemplate = Handlebars.compile(
-			"<div class='git-object reference-object img-rounded'>" +
+			"<div class='git-object reference-object img-rounded' {{#if isLocalReference}} data-toggle='context' data-target='#reference-object-context-menu' {{/if}}>" +
 				"<div class='title text-center' title='{{title}}'>{{title}}</div>"+
 				"<div class='content'>"+					
 				"</div>" +
@@ -376,10 +436,19 @@ require(['jquery'], function() {
 			"</div>");
 
 		var progressTemplate = "<div class='active progress progress-striped'>"+
-							"<div class='bar' style='width: 100%;''></div>"+
-						"</div>";
+									"<div class='bar' style='width: 100%;''></div>"+
+								"</div>";
 
 		var loadMoreCommitsBtn = "<a class='btn active' href='#'>Load 10 More</a>";
+
+		var diffNamesObjectTemplate = Handlebars.compile(
+			"<table class='table table-hover table-striped table-bordered table-condensed diff-names-object'>" +
+			"</table>");
+
+		var diffNameObjectTemplate = Handlebars.compile(
+			"<tr class='{{modification}}'>" +
+				"<td class='diff-name-object'>{{file}}</td>" +
+			"</tr>")
 	});
 });
 
@@ -403,7 +472,7 @@ function buildAlert(message, severity, doNotAutoRemove) {
 			$alert.fadeOut(250, function(){
 				$alert.remove();
 			})
-		}, 2000);
+		}, 5000);
 	}
 
 	return $alert		
