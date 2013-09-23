@@ -33,7 +33,7 @@ require(['jquery'], function() {
 			'objects/hunk'], function(Repositories, Repository, References, Reference, Commits, Commit, Hunks, Hunk) {	
 
 			/*************** Backbone Object Interactions ***************/
-			var repositories = new Repositories($("#repository-objects"), $("#repository-objects-container"));
+			var repositories = new Repositories($("#repository-objects"), $("#repository-objects-container"), clear);
 			var references = new References($("#repository-references-container"));
 			var commits = new Commits($("#commit-objects"), $("#commit-history-container"));
 			var hunks = new Hunks($("#file-diff-objects"), $("#file-diffs-container"))
@@ -50,6 +50,7 @@ require(['jquery'], function() {
 
 			function getFileDiff(path, branch, sha1, sha2, fileName) {
 				hunks.clear();
+				showLoading();
 
 				$.get(getBaseUrl("/git/diff/file"+
 					"?path=" + path + "&branch="+ branch +
@@ -62,6 +63,8 @@ require(['jquery'], function() {
 						$(hunksObj).each(function(i, lines){
 							hunks.add(new Hunk(lines));
 						});
+
+						hideLoading();
 				});
 			}
 
@@ -69,19 +72,15 @@ require(['jquery'], function() {
 			function getCommits(path, branch, results) {
 				commits.clear();
 				hunks.clear();
-				var progress = $(progressTemplate);
-
-				$("#commit-objects").append(progress);
-				$("#commit-history-container").show();
-			
+				
+				showLoading();
 				$.get(getBaseUrl("/git/commits?path=" + path + "&branch=" + branch + "&results=" + results), 
-					function success(data){
-						progress.remove();					
+					function success(data) {						
 						var commitHistory = eval("(" + data + ")");
 						
 						$(commitHistory).each(function(i, commitJson) {
 							commits.add(new Commit(commitJson.commit, commitJson.date, 
-								commitJson.author, commitJson.message, branch, path, getFileDiff, clearHunks));
+								commitJson.author, commitJson.message, branch, path, getFileDiff, clearHunks, showLoading, hideLoading));
 						});
 
 						// Create and add "load more buttons"
@@ -93,6 +92,8 @@ require(['jquery'], function() {
 									getCommits(path, branch, results + 10);
 								}	)
 							.appendTo($("#commit-objects"));
+
+						hideLoading();
 					});
 			}
 
@@ -102,17 +103,21 @@ require(['jquery'], function() {
 				commits.clear();
 				hunks.clear();
 
+				showLoading();
 				$.get(getBaseUrl("/git/refs?path=") + path, 
-					function success(data){
+					function success(data){						
 						var refs = data.split(",");
 
 						$(refs).each(function(i, ref) {
 							references.add(new Reference(ref, path, getCommits));
 						});
+
+						hideLoading();
 					});				
 			}
 
 			// Start loading of repositories
+			showLoading();
 			$.get(getBaseUrl("/cfg/single?property=repositories"),
 				function success(data) {
 					var reposJson = eval("(" + data + ")");	
@@ -124,9 +129,11 @@ require(['jquery'], function() {
 						$.get(getBaseUrl("/git/branch/current?path=" + repoJson.path),
 							function success(branch) {
 								repositories.add(new Repository(repoJson.path, repoJson.alias, 
-									branch, getReferences, showEditRepoModal, showRemoveRepoModal));
+									branch, getReferences, showEditRepoModal, showRemoveRepoModal, showLoading, hideLoading));
 							});
-					})
+					});
+
+					hideLoading();
 				});
 
 			/***************** MODAL ACTIONS *****************/
@@ -291,11 +298,17 @@ require(['jquery'], function() {
 
 		function showRemoveRepoModal() {
 			$("#repo-remove-confirm-modal").modal("show");
-		}		
-		
-		var progressTemplate = "<div class='active progress progress-striped'>"+
-									"<div class='bar' style='width: 100%;''></div>"+
-								"</div>";
+		}
+
+		function showLoading() {
+			$("#loading-modal").modal("show");
+		}
+
+		function hideLoading() {
+			setTimeout(function(){
+				$("#loading-modal").modal("hide");		
+			}, 250);			
+		}
 	});
 });
 

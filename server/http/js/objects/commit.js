@@ -45,7 +45,8 @@ define(['jquery', 'jquery-ui', 'handlebars', 'backbone'], function() {
 					var sha2 = $this.attr("commit");
 					var path = self.model.get("path");
 					var branch = self.model.get("branch");
-						
+					
+					self.options.showLoading();
 					$.get(getBaseUrl("/git/diff/names?path=" + path + 
 							"&branch=" + branch + 
 							"&sha1=" + sha1 +
@@ -84,6 +85,7 @@ define(['jquery', 'jquery-ui', 'handlebars', 'backbone'], function() {
 							});
 
 							$this.append(diffNamesObject);
+							self.options.hideLoading();
 					 	});
 				});
 
@@ -92,7 +94,7 @@ define(['jquery', 'jquery-ui', 'handlebars', 'backbone'], function() {
 		}
 	});
 
-	return function(commit, date, author, message, branch, path, getFileDiff, clearHunks) {
+	return function(commit, date, author, message, branch, path, getFileDiff, clearHunks, showLoading, hideLoading) {
 		this.model = new Model({
 			commit: commit,
 			date: date,
@@ -105,7 +107,9 @@ define(['jquery', 'jquery-ui', 'handlebars', 'backbone'], function() {
 		this.view = new View({
 			model: this.model,
 			getFileDiff: getFileDiff,
-			clearHunks: clearHunks
+			clearHunks: clearHunks,
+			showLoading: showLoading,
+			hideLoading: hideLoading
 		})
 
 		this.model.view = this.view;

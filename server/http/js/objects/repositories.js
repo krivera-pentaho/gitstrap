@@ -17,6 +17,7 @@ define(['jquery','backbone'], function() {
 			this.collection.on("change", function(repositoryModel) {
 				var view = repositoryModel.view;
 				view.$el.replaceWith(view.render().$el);
+				self.options.clear();
 			});
 
 			// Bind on remove
@@ -34,12 +35,13 @@ define(['jquery','backbone'], function() {
 		}
 	});
 
-	return function($addToContainer, $wrapper, RepositoryList) {
+	return function($addToContainer, $wrapper, clear, RepositoryList) {
 		this.collection = new Collection();
 		this.view = new View({
 			collection: this.collection,
 			container: $addToContainer,
-			wrapper: $wrapper
+			wrapper: $wrapper,
+			clear: clear
 		});	
 
 		var self = this;

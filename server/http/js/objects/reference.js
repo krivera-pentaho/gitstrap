@@ -41,6 +41,11 @@ define(['jquery', 'handlebars', 'backbone'], function() {
 					this.$el
 						.bind("click contextmenu", function() {
 							$this = $(this);
+							if ($this.attr("was-dropped") == "true") {
+								$this.attr("was-dropped", "false");
+								return;
+							}
+
 							$this.siblings().removeClass("active");
 							$this.addClass("active");
 														

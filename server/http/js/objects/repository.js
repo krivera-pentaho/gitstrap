@@ -38,26 +38,27 @@ define(['AlertBuilder','jquery', 'backbone', 'handlebars'], function(AlertBuilde
 					hoverClass: "ui-state-highlight",
 					drop: function(event, ui) { 
 						var droppedBranch = ui.helper.attr("reference");
-
+						ui.helper.attr("was-dropped", "true");
+						self.options.showLoading();
+						
 						// Checkout branch on drop
-						$.post(getBaseUrl("/git/branch/checkout" +
-							"?path=" + path +
-							"&branch=" + droppedBranch), 
-							function success() {
+						$.post(getBaseUrl("/git/branch/checkout" + "?path=" + path + "&branch=" + droppedBranch),							
+							function success() {								
 								self.model.set("branch", droppedBranch);							
 								AlertBuilder.build("Switched " + alias + " to " + droppedBranch, "SUCCESS", $("#alert-bar"));
+								self.options.hideLoading();
 							});
 					}
 				})
-				.bind("click contextmenu", function() {
+				.bind("click contextmenu", function(event) {
 					var $this = $(this);
-
-					if ($this.hasClass("active")) {
-						return;
-					}
 
 					$(".repository-object").removeClass("active");
 					$this.addClass("active");
+
+					if (event.button == 2) {
+						return;
+					}
 
 					self.options.getReferences(alias, path);
 					$("#commit-history-container").hide();
@@ -79,7 +80,7 @@ define(['AlertBuilder','jquery', 'backbone', 'handlebars'], function(AlertBuilde
 		}
 	});
 	
-	return function(path, alias, branch, getReferences, showEditRepoModal, showRemoveRepModal) {		
+	return function(path, alias, branch, getReferences, showEditRepoModal, showRemoveRepModal, showLoading, hideLoading) {		
 		this.model = new Model({
 			path: path,
 			alias: alias,
@@ -91,7 +92,9 @@ define(['AlertBuilder','jquery', 'backbone', 'handlebars'], function(AlertBuilde
 			model: this.model,
 			getReferences: getReferences,
 			showEditRepoModal: showEditRepoModal,
-			showRemoveRepModal: showRemoveRepModal
+			showRemoveRepModal: showRemoveRepModal,
+			showLoading: showLoading,
+			hideLoading: hideLoading
 		});
 
 		this.model.view = this.view;
