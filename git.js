@@ -964,6 +964,35 @@ module.exports = (function() {
 			});
 		}
 	}
+
+	function diff(path, commitA, commitB, callback) {
+		var cmd = 'git diff ' + commitA + " " + commitB;
+		if (repository(path)) {
+			exec(cmd, function(err, stdout, stderr) {
+				if (err || stderr) {
+					console.log(err || stderr);
+					if (callback) {
+						process.chdir(back);
+						callback.call(this, {
+							error : err || stderr
+						});
+					}
+				// all is good
+				} else {
+					var parseme = stdout.split('\n');
+					
+					if (callback) {						
+						callback.call(this, parseme);
+						process.chdir(back);
+					}
+				}
+			});
+		} else {
+			callback.call(this, {
+				error : 'Invalid repository'
+			});
+		}
+	}
 	
 	// public methods
 	return {
@@ -985,7 +1014,8 @@ module.exports = (function() {
 		merge : merge,
 		clone : clone,
 		references : references,
-		diffNames : diffNames
+		diffNames : diffNames,
+		diff : diff
 	};
   
 })();

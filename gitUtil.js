@@ -46,10 +46,60 @@ var getDiffNames = exports.getDiffNames = function(path, branch, sha1, sha2, cal
 }
 
 var checkoutBranch = exports.checkoutBranch = function(path, branch, callback) {
-	console.log(path  + " " + branch);
 	git.checkout(path, branch, function(){
 		callback();
 	});
+}
+
+var getDiffFile = exports.getDiffFile = function(path, branch, sha1, sha2, fileName, callback) {
+	_switchAndMaintainBranch(branch, function(checkoutCallback) {
+		git.diff(path, sha1, sha2, function(fileDiffs) {
+
+			var fileFound = false;
+			var hunks = [];	
+			var hunk = [];
+			var start = false;	
+
+			fileDiffs.forEach(function(val, key) {
+				
+				if (val.search("diff --git") > -1) {					
+					fileFound = val.search(fileName) > -1;
+				}
+				
+				if (fileFound) {
+					
+					if (val.search("@@") > -1) {
+						
+						if (hunk.length > 0) {
+							hunks.push(hunk);
+						}
+						start = true;
+						hunk = [];
+						hunk.push(["", val]);
+						return;
+					}				
+
+					if (!start) {
+						return;
+					}
+
+					hunk.push([val.substr(0,1), val.substr(1)]);
+
+					if (key == fileDiffs.length - 1) {
+						hunks.push(hunk);
+					}
+
+				} else if (hunk.length > 0 ) {
+					hunks.push(hunk);
+					hunk = [];
+				}				
+			});
+
+			checkoutCallback(function() {
+				callback(JSON.stringify(hunks));
+			});
+		});
+	});	
 }
 
 function _switchAndMaintainBranch(branch, action) {

@@ -5,8 +5,8 @@ define(['jquery', 'jquery-ui', 'handlebars', 'backbone'], function() {
 		"</table>");
 
 	var diffNameObjectTemplate = Handlebars.compile(
-		"<tr class='{{modification}}'>" +
-			"<td class='diff-name-object'>" +
+		"<tr class='diff-name-object {{modification}}'>" +
+			"<td>" +
 				"{{fileName}}" +
 				"<div class='full-file-path'>" +
 					"{{file}}" +
@@ -38,11 +38,18 @@ define(['jquery', 'jquery-ui', 'handlebars', 'backbone'], function() {
 					$this = $(this);
 					$this.siblings().removeClass("active");
 					$this.addClass("active");
+
+					self.options.clearHunks();
+
+					var sha1 = $this.next().attr("commit");
+					var sha2 = $this.attr("commit");
+					var path = self.model.get("path");
+					var branch = self.model.get("branch");
 						
-					$.get(getBaseUrl("/git/diffs?path=" + self.model.get("path") + 
-							"&branch=" + self.model.get("branch") + 
-							"&sha1=" + $this.next().attr("commit") +
-							"&sha2=" + $this.attr("commit")), 
+					$.get(getBaseUrl("/git/diff/names?path=" + path + 
+							"&branch=" + branch + 
+							"&sha1=" + sha1 +
+							"&sha2=" + sha2), 
 						function success(data){
 							$(".diff-names-object").remove();
 							var diffNames = eval("(" + data + ")");
@@ -62,15 +69,17 @@ define(['jquery', 'jquery-ui', 'handlebars', 'backbone'], function() {
 									case "A" : modification = "success"; break;
 								}
 
-
-
 								var fullFile = diffName[1];
 								var fileName = fullFile.replace(new RegExp("(\\S+/)*").exec(fullFile)[0], "");
 								var diffNameObject = $(diffNameObjectTemplate({
 									modification: modification,
 									fileName: fileName,
 									file: fullFile
-								}));
+								}))
+								.bind("click", function(event) {
+									self.options.getFileDiff(path, branch, sha1, sha2, fullFile);
+									event.stopPropagation();
+								});
 								diffNamesObject.append(diffNameObject);
 							});
 
@@ -83,7 +92,7 @@ define(['jquery', 'jquery-ui', 'handlebars', 'backbone'], function() {
 		}
 	});
 
-	return function(commit, date, author, message, branch, path) {
+	return function(commit, date, author, message, branch, path, getFileDiff, clearHunks) {
 		this.model = new Model({
 			commit: commit,
 			date: date,
@@ -94,7 +103,9 @@ define(['jquery', 'jquery-ui', 'handlebars', 'backbone'], function() {
 		});
 
 		this.view = new View({
-			model: this.model
+			model: this.model,
+			getFileDiff: getFileDiff,
+			clearHunks: clearHunks
 		})
 
 		this.model.view = this.view;

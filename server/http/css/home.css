@@ -8,11 +8,6 @@
 	padding-top: 20px;
 }
 
-#repository-objects {
-	margin-top: 10px;
-	white-space: nowrap;
-}
-
 .git-object {
 	border: solid 1px #000;
 	display: inline-table;
@@ -46,8 +41,9 @@
 }
 
 .repository-object {
-	width: 125px;
+	width: 200px;
 	height: 150px;
+	word-break: break-all;
 }
 
 .reference-object {
@@ -80,4 +76,21 @@
 
 .full-file-path {
 	font-size: small;
+}
+
+.git-object.active .title {
+	background-color: #08c;	
+}
+
+.diff-name-object.active {
+	background-color: #08c !important;
+}
+
+.hunk-objects.table td {
+	white-space: pre;
+	border-top: none;
+}
+
+.hunk-objects.table .code-type {
+	text-align: center;
 }

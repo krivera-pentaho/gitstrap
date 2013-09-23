@@ -148,7 +148,7 @@ server.get("/git/commits", function(request, response){
 });
 
 // Get diffs of a branch from its sha ids
-server.get("/git/diffs", function(request, response){
+server.get("/git/diff/names", function(request, response){
 	var queryData = url.parse(request.url, true).query;
 	var path = queryData.path;
 	var branch = queryData.branch;
@@ -161,6 +161,21 @@ server.get("/git/diffs", function(request, response){
 		response.end(diffs);
 	});
 });
+
+// Get the diff of a file
+server.get("/git/diff/file", function(request, response) {
+	var queryData = url.parse(request.url, true).query;
+	var path = queryData.path;
+	var branch = queryData.branch;
+	var sha1 = queryData.sha1;
+	var sha2 = queryData.sha2;
+	var fileName = queryData.fileName;
+
+	gitUtil.getDiffFile(path, branch, sha1, sha2, fileName, function(fileDiffs){
+		response.writeHead(200);
+		response.end(fileDiffs);
+	});
+})
 
 function readHttpFile(path, encoding, callback) {
 	var url = httpDir + "/http/" + path;

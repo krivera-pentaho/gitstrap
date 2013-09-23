@@ -28,16 +28,47 @@ require(['jquery'], function() {
 			'objects/references',
 			'objects/reference',
 			'objects/commits',
-			'objects/commit'], function(Repositories, Repository, References, Reference, Commits, Commit) {	
+			'objects/commit',
+			'objects/hunks',
+			'objects/hunk'], function(Repositories, Repository, References, Reference, Commits, Commit, Hunks, Hunk) {	
 
 			/*************** Backbone Object Interactions ***************/
 			var repositories = new Repositories($("#repository-objects"), $("#repository-objects-container"));
 			var references = new References($("#repository-references-container"));
 			var commits = new Commits($("#commit-objects"), $("#commit-history-container"));
+			var hunks = new Hunks($("#file-diff-objects"), $("#file-diffs-container"))
+
+			function clearHunks() {
+				hunks.clear();
+			}
+
+			function clear() {
+				references.clear();
+				commits.clear();
+				hunks.clear();
+			}
+
+			function getFileDiff(path, branch, sha1, sha2, fileName) {
+				hunks.clear();
+
+				$.get(getBaseUrl("/git/diff/file"+
+					"?path=" + path + "&branch="+ branch +
+					"&sha1=" + sha1+ "&sha2="+ sha2 +
+					"&fileName=" + fileName), function success(data) {
+						hunks.model.set("fileName", fileName);
+
+						var hunksObj = eval("(" + data + ")");
+
+						$(hunksObj).each(function(i, lines){
+							hunks.add(new Hunk(lines));
+						});
+				});
+			}
 
 			// Retrieve the commits for a given reference
 			function getCommits(path, branch, results) {
-				commits.clear();				
+				commits.clear();
+				hunks.clear();
 				var progress = $(progressTemplate);
 
 				$("#commit-objects").append(progress);
@@ -49,7 +80,8 @@ require(['jquery'], function() {
 						var commitHistory = eval("(" + data + ")");
 						
 						$(commitHistory).each(function(i, commitJson) {
-							commits.add(new Commit(commitJson.commit, commitJson.date, commitJson.author, commitJson.message, branch, path));
+							commits.add(new Commit(commitJson.commit, commitJson.date, 
+								commitJson.author, commitJson.message, branch, path, getFileDiff, clearHunks));
 						});
 
 						// Create and add "load more buttons"
@@ -68,6 +100,7 @@ require(['jquery'], function() {
 			function getReferences(alias, path) {
 				references.clear();
 				commits.clear();
+				hunks.clear();
 
 				$.get(getBaseUrl("/git/refs?path=") + path, 
 					function success(data){
@@ -162,6 +195,7 @@ require(['jquery'], function() {
 									AlertBuilder.build("Repository '" + alias + "' has been removed successfully", "SUCCESS", $("#alert-bar"));									
 								}
 
+								clear();
 								repositories.remove(alias);
 
 								if (callback) {
@@ -180,6 +214,7 @@ require(['jquery'], function() {
 
 					// Then add in the new one
 					repositoryAdd(alias, path, true);
+					clear();
 				}, true);
 			}
 
@@ -262,7 +297,8 @@ require(['jquery'], function() {
 									"<div class='bar' style='width: 100%;''></div>"+
 								"</div>";
 
-		// $.get(getBaseUrl("/git/diffs?path=/home/krivera/git/pentaho-platform/&sha=a0159cb3b47e1343ea0c43f81569534f569ad99d"), function success(data){
+		// $.get(getBaseUrl("/git/diff/file?path=/home/kkrivera/git/gitstrap&branch=master&sha1=1a2b7830aec47b3990dff0904b64ef2839b5a0f0&sha2=9e76c67af87859a9336a39fa37e28fdcb2aa49ff&fileName=/server/http/js/objects/commit.js"), function success(data){
+		// 	alert(data);
 		// });
 	});
 });
