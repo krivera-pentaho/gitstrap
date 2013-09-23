@@ -67,7 +67,7 @@
 }
 
 .diff-name-object {
-	word-break: break-all;	
+	word-break: break-all;
 }
 
 .repository-object, .local-reference-object, .commit-object {
@@ -87,8 +87,9 @@
 }
 
 .hunk-objects.table td {
-	white-space: pre;
+	white-space: pre-wrap;
 	border-top: none;
+	word-break: break-all;
 }
 
 .hunk-objects.table .code-type {

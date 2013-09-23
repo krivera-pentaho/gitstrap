@@ -296,10 +296,6 @@ require(['jquery'], function() {
 		var progressTemplate = "<div class='active progress progress-striped'>"+
 									"<div class='bar' style='width: 100%;''></div>"+
 								"</div>";
-
-		// $.get(getBaseUrl("/git/diff/file?path=/home/kkrivera/git/gitstrap&branch=master&sha1=1a2b7830aec47b3990dff0904b64ef2839b5a0f0&sha2=9e76c67af87859a9336a39fa37e28fdcb2aa49ff&fileName=/server/http/js/objects/commit.js"), function success(data){
-		// 	alert(data);
-		// });
 	});
 });
 
