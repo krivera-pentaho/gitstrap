@@ -43,10 +43,17 @@ define(['AlertBuilder','jquery', 'backbone', 'handlebars'], function(AlertBuilde
 						
 						// Checkout branch on drop
 						$.post(getBaseUrl("/git/branch/checkout" + "?path=" + path + "&branch=" + droppedBranch),							
-							function success() {								
+							function success(data) {
+								self.options.hideLoading();
+								var messageJSON = eval("(" + data + ")");
+
+								if (messageJSON.error.search("error:") > -1) {
+									AlertBuilder.build("Error switching branch (" + messageJSON.error + ")", "ERROR", $("#alert-bar"));
+									return;
+								}
+
 								self.model.set("branch", droppedBranch);							
 								AlertBuilder.build("Switched " + alias + " to " + droppedBranch, "SUCCESS", $("#alert-bar"));
-								self.options.hideLoading();
 							});
 					}
 				})
@@ -69,7 +76,7 @@ define(['AlertBuilder','jquery', 'backbone', 'handlebars'], function(AlertBuilde
 
 						switch (id) {
 							case "remove-repo-context": 
-								self.options.showRemoveRepModal(); break;
+								self.options.showRemoveRepoModal(); break;
 							case "edit-repo-context": 
 								self.options.showEditRepoModal(alias, path); break;
 						}
@@ -80,7 +87,7 @@ define(['AlertBuilder','jquery', 'backbone', 'handlebars'], function(AlertBuilde
 		}
 	});
 	
-	return function(path, alias, branch, getReferences, showEditRepoModal, showRemoveRepModal, showLoading, hideLoading) {		
+	return function(path, alias, branch, getReferences, showEditRepoModal, showRemoveRepoModal, showLoading, hideLoading) {		
 		this.model = new Model({
 			path: path,
 			alias: alias,
@@ -92,7 +99,7 @@ define(['AlertBuilder','jquery', 'backbone', 'handlebars'], function(AlertBuilde
 			model: this.model,
 			getReferences: getReferences,
 			showEditRepoModal: showEditRepoModal,
-			showRemoveRepModal: showRemoveRepModal,
+			showRemoveRepoModal: showRemoveRepoModal,
 			showLoading: showLoading,
 			hideLoading: hideLoading
 		});

@@ -115,9 +115,9 @@ server.post("/git/branch/checkout", function(request, response){
 	var path = queryData.path;
 	var branch = queryData.branch;
 
-	gitUtil.checkoutBranch(path, branch, function(){
+	gitUtil.checkoutBranch(path, branch, function(data){
 		response.writeHead(200);
-		response.end();
+		response.end(data);
 	})
 });
 
@@ -183,6 +183,6 @@ function readHttpFile(path, encoding, callback) {
 }
 
 // Listen on port 8080
-server.listen(8080);
+server.listen(8081);
 
 console.log("Server running on localhost:8080");

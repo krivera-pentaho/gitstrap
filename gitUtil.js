@@ -46,8 +46,8 @@ var getDiffNames = exports.getDiffNames = function(path, branch, sha1, sha2, cal
 }
 
 var checkoutBranch = exports.checkoutBranch = function(path, branch, callback) {
-	git.checkout(path, branch, function(){
-		callback();
+	git.checkout(path, branch, function(data){
+		callback(JSON.stringify(data));
 	});
 }
 

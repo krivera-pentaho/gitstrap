@@ -545,7 +545,8 @@ module.exports = (function() {
 					if (callback) {
 						process.chdir(back);
 						callback.call(this, {
-							message : (stdout) || (stderr)
+							message : (stdout),
+							error: (stderr)
 						});
 					}
 				} else if (err || stderr) {
