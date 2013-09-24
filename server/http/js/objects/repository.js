@@ -33,7 +33,7 @@ define(['AlertBuilder','jquery', 'backbone', 'handlebars'], function(AlertBuilde
 					accept: function(draggable){											
 						return path == draggable.attr("path") && 
 							draggable.attr("reference") != branch && 
-							draggable.hasClass("reference-object");
+							draggable.hasClass("local-reference-object");
 					},
 					hoverClass: "ui-state-highlight",
 					drop: function(event, ui) { 

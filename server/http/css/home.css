@@ -13,6 +13,7 @@
 	display: inline-table;
 	margin-right: 10px;
 	margin-bottom: 10px;
+	background-color: #EEE;
 
 	-webkit-touch-callout: none;
 	-webkit-user-select: none;
@@ -70,7 +71,7 @@
 	word-break: break-all;
 }
 
-.repository-object, .local-reference-object, .commit-object {
+.repository-object, .local-reference-object, .commit-object, .remote-reference-object {
 	cursor: pointer;
 }
 

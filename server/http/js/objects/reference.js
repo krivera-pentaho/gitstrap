@@ -51,8 +51,23 @@ define(['jquery', 'handlebars', 'backbone'], function() {
 														
 							self.options.getCommits(path, title, 10);
 						})						
-						.draggable({ revert : true 	})
+						.draggable({ revert : true })
+						.droppable({
+							accept: ".reference-object",
+							hoverClass: "ui-state-highlight",
+							drop: function(event, ui) {
+								if (ui.helper.hasClass("local-reference-object")){
+									// perform rebase
+								} else if (ui.helper.hasClass("remote-reference-object")) {
+									// perform pull from remote
+								}
+							}
+						})
 						.addClass("local-reference-object");	
+				} else if (reference.search(remoteRef) > -1) {
+					this.$el
+						.draggable({ revert: true })
+						.addClass("remote-reference-object");
 				}
 
 			return this;
