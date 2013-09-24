@@ -167,7 +167,7 @@ require(['jquery'], function() {
 													AlertBuilder.build("Repository Added", "SUCCESS", $("#alert-bar"));	
 												}
 												repositories.add(new Repository(path, alias, branch, 
-													getReferences, showEditRepoModal, showRemoveRepoModal));
+													getReferences, showEditRepoModal, showRemoveRepoModal, showLoading, hideLoading));
 											});
 									}).fail(function error() {
 										AlertBuilder.build("An error occured writing the configuration", "ERROR", $("#alert-bar"));
