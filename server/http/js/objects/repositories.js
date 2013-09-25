@@ -42,7 +42,7 @@ define(['jquery','backbone'], function() {
 			container: $addToContainer,
 			wrapper: $wrapper,
 			clear: clear
-		});	
+		});
 
 		var self = this;
 		$(RepositoryList).each(function(i, Repository){

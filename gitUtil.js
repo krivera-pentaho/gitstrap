@@ -26,7 +26,7 @@ var getReferences = exports.getReferences = function(path, callback) {
 }
 
 var getCommits = exports.getCommits = function(path, branch, results, callback) {
-	_switchAndMaintainBranch(branch, function(checkoutCallback) {
+	_switchAndMaintainBranch(path, branch, function(checkoutCallback) {
 		git.history(path, results, function(history) {
 			checkoutCallback(function() {
 				callback(JSON.stringify(history));		
@@ -36,7 +36,7 @@ var getCommits = exports.getCommits = function(path, branch, results, callback) 
 }
 
 var getDiffNames = exports.getDiffNames = function(path, branch, sha1, sha2, callback) {
-	_switchAndMaintainBranch(branch, function(checkoutCallback, message) {
+	_switchAndMaintainBranch(path, branch, function(checkoutCallback, message) {
 		git.diffNames(path, sha1, sha2, function(diffNames) {
 			checkoutCallback(function() {
 				callback(JSON.stringify(diffNames));
@@ -52,7 +52,7 @@ var checkoutBranch = exports.checkoutBranch = function(path, branch, callback) {
 }
 
 var getDiffFile = exports.getDiffFile = function(path, branch, sha1, sha2, fileName, callback) {
-	_switchAndMaintainBranch(branch, function(checkoutCallback) {
+	_switchAndMaintainBranch(path, branch, function(checkoutCallback) {
 		git.diff(path, sha1, sha2, function(fileDiffs) {
 
 			var fileFound = false;
@@ -103,12 +103,7 @@ var getDiffFile = exports.getDiffFile = function(path, branch, sha1, sha2, fileN
 }
 
 var pull = exports.pull = function(path, pullToBranch, remote, branch, callback) {
-	_switchAndMaintainBranch(branch, function(checkoutCallback, message) {
-		if (message.error.search("error:") > -1) {
-			callback(JSON.stringify(message));
-			return;
-		}
-
+	_switchAndMaintainBranch(path, branch, function(checkoutCallback, message) {
 		git.pull(path, remote, branch, function(data) {
 			checkoutCallback(function() {
 				callback(JSON.stringify(data));
@@ -117,7 +112,7 @@ var pull = exports.pull = function(path, pullToBranch, remote, branch, callback)
 	});	
 }
 
-function _switchAndMaintainBranch(branch, action) {
+function _switchAndMaintainBranch(path, branch, action) {
 	
 	// Get current branch
 	getCurrentBranch(path, function(currentBranch) {

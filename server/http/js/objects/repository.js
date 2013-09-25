@@ -28,7 +28,8 @@ define(['AlertBuilder','jquery', 'backbone', 'handlebars'], function(AlertBuilde
 
 			this.$el
 				.attr("alias", alias)
-				.attr("path", path)
+				.attr("path", path)	
+				.attr("branch", branch)
 				.droppable({
 					accept: function(draggable){											
 						return path == draggable.attr("path") && 
@@ -69,7 +70,7 @@ define(['AlertBuilder','jquery', 'backbone', 'handlebars'], function(AlertBuilde
 
 					self.options.getReferences(alias, path);
 					$("#commit-history-container").hide();
-				})
+				})				
 				.contextmenu({
 					onItem: function(e, item) {
 						var id = $(item).attr("id");

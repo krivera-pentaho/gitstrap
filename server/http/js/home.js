@@ -42,6 +42,11 @@ require(['jquery'], function() {
 				hunks.clear();
 			}
 
+			function clearCommits() {
+				hunks.clear();
+				commits.clear();
+			}
+
 			function clear() {
 				references.clear();
 				commits.clear();
@@ -109,7 +114,7 @@ require(['jquery'], function() {
 						var refs = data.split(",");
 
 						$(refs).each(function(i, ref) {
-							references.add(new Reference(ref, path, getCommits, showLoading, hideLoading));
+							references.add(new Reference(ref, path, getCommits, clearCommits, showLoading, hideLoading));
 						});
 
 						hideLoading();

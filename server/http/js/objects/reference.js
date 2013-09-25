@@ -81,6 +81,7 @@ define(['AlertBuilder', 'jquery', 'handlebars', 'backbone'], function(AlertBuild
 										draggable.hasClass(localReferenceClass));
 
 						},
+
 						hoverClass: "ui-state-highlight",
 
 						drop: function(event, ui) {
@@ -99,11 +100,21 @@ define(['AlertBuilder', 'jquery', 'handlebars', 'backbone'], function(AlertBuild
 										"&branch=" + remoteAndBranch[1]), function success(data) {
 
 											var messages = eval("(" + data + ")");
-											if (messages.error) {
-												AlertBuilder.build("Error pulling from remote (" + messages.error + ")", "ERROR", $("#alert-bar"));
+											var $appendMessageTo = $("#repository-references-container .alert-container");
+											if (messages.error.search("error:") > -1) {
+												AlertBuilder.build("Error pulling from remote (" + messages.error + ")", "ERROR", $appendMessageTo);
+											} else {
+												if (self.$el.hasClass("active")){
+													self.options.clearCommits();
+													self.$el.removeClass("active");
+												}
+												
+												AlertBuilder.build("Pull from '" + ui.helper.attr("reference") + "'' to '" + title + "'' successful", "SUCCESS", $appendMessageTo);
 											}
 
-											self.options.hideLoading()
+											
+											
+											self.options.hideLoading();
 									})
 								}	
 							} else if (self.$el.hasClass(remoteReferenceClass)) {
@@ -116,7 +127,7 @@ define(['AlertBuilder', 'jquery', 'handlebars', 'backbone'], function(AlertBuild
 		}
 	});
 
-	return function(reference, path, getCommits, showLoading, hideLoading) {
+	return function(reference, path, getCommits, clearCommits, showLoading, hideLoading) {
 		this.model = new Model({
 			reference: reference,
 			path: path,
@@ -126,6 +137,7 @@ define(['AlertBuilder', 'jquery', 'handlebars', 'backbone'], function(AlertBuild
 		this.view = new View({
 			model: this.model,
 			getCommits: getCommits,
+			clearCommits: clearCommits,
 			showLoading: showLoading, 
 			hideLoading: hideLoading
 		});
