@@ -1,8 +1,11 @@
-define(['jquery', 'handlebars', 'backbone'], function() {
+define(['AlertBuilder', 'jquery', 'handlebars', 'backbone'], function(AlertBuilder) {
 
 	var localRef = "refs/heads/";
 	var remoteRef = "refs/remotes/";
 	var tagRef = "refs/tags/";
+
+	var localReferenceClass = "local-reference-object";
+	var remoteReferenceClass = "remote-reference-object";
 
 	var Model = Backbone.Model.extend({
 
@@ -41,7 +44,7 @@ define(['jquery', 'handlebars', 'backbone'], function() {
 					this.$el
 						.bind("click contextmenu", function() {
 							$this = $(this);
-							if ($this.attr("was-dropped") == "true") {
+							if ($this.attr("was-dropped") == "true" || $this.attr("dragging") == "true") {
 								$this.attr("was-dropped", "false");
 								return;
 							}
@@ -50,31 +53,70 @@ define(['jquery', 'handlebars', 'backbone'], function() {
 							$this.addClass("active");
 														
 							self.options.getCommits(path, title, 10);
-						})						
-						.draggable({ revert : true })
-						.droppable({
-							accept: ".reference-object",
-							hoverClass: "ui-state-highlight",
-							drop: function(event, ui) {
-								if (ui.helper.hasClass("local-reference-object")){
-									// perform rebase
-								} else if (ui.helper.hasClass("remote-reference-object")) {
-									// perform pull from remote
-								}
-							}
-						})
-						.addClass("local-reference-object");	
+						})												
+						.addClass(localReferenceClass);	
 				} else if (reference.search(remoteRef) > -1) {
 					this.$el
 						.draggable({ revert: true })
-						.addClass("remote-reference-object");
+						.addClass(remoteReferenceClass);
 				}
+
+				this.$el
+					.draggable({ 
+						revert : true,
+						start: function(event, ui) {
+							ui.helper.css("z-index", 2);
+							ui.helper.attr("dragging", "true");
+						},
+						stop: function(event, ui) {
+							ui.helper.css("z-index", 0);
+							ui.helper.attr("dragging", "false");
+						}
+					})
+					.droppable({
+						accept: function(draggable){
+							return (self.$el.hasClass(localReferenceClass) && 
+										draggable.hasClass("reference-object")) || 
+									(self.$el.hasClass(remoteReferenceClass) &&
+										draggable.hasClass(localReferenceClass));
+
+						},
+						hoverClass: "ui-state-highlight",
+
+						drop: function(event, ui) {
+							if (self.$el.hasClass(localReferenceClass)){
+								if (ui.helper.hasClass(localReferenceClass)) {
+									// perform rebase
+								} else if (ui.helper.hasClass(remoteReferenceClass)) {
+									var remoteAndBranch = ui.helper.attr("reference").split("/");
+
+									// Submit pull request
+									self.options.showLoading();
+									$.post(getBaseUrl("/git/pull"+
+										"?path=" + path +
+										"&pullToBranch=" + title +
+										"&remote=" + remoteAndBranch[0] + 
+										"&branch=" + remoteAndBranch[1]), function success(data) {
+
+											var messages = eval("(" + data + ")");
+											if (messages.error) {
+												AlertBuilder.build("Error pulling from remote (" + messages.error + ")", "ERROR", $("#alert-bar"));
+											}
+
+											self.options.hideLoading()
+									})
+								}	
+							} else if (self.$el.hasClass(remoteReferenceClass)) {
+								// perform push to remote
+							}							
+						}
+					})
 
 			return this;
 		}
 	});
 
-	return function(reference, path, getCommits) {
+	return function(reference, path, getCommits, showLoading, hideLoading) {
 		this.model = new Model({
 			reference: reference,
 			path: path,
@@ -83,7 +125,9 @@ define(['jquery', 'handlebars', 'backbone'], function() {
 
 		this.view = new View({
 			model: this.model,
-			getCommits: getCommits
+			getCommits: getCommits,
+			showLoading: showLoading, 
+			hideLoading: hideLoading
 		});
 
 		this.model.view = this.view;

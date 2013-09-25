@@ -177,6 +177,19 @@ server.get("/git/diff/file", function(request, response) {
 	});
 })
 
+server.post("/git/pull", function(request, response) {
+	var queryData = url.parse(request.url, true).query;
+	var path = queryData.path;
+	var pullToBranch = queryData.pullToBranch;
+	var remote = queryData.remote;
+	var branch = queryData.branch;
+
+	gitUtil.pull(path, pullToBranch, remote, branch, function(data){
+		response.writeHead(200);
+		response.end(data);
+	});
+})
+
 function readHttpFile(path, encoding, callback) {
 	var url = httpDir + "/http/" + path;
 	fs.readFile(url, encoding, callback);

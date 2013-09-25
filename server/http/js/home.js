@@ -109,7 +109,7 @@ require(['jquery'], function() {
 						var refs = data.split(",");
 
 						$(refs).each(function(i, ref) {
-							references.add(new Reference(ref, path, getCommits));
+							references.add(new Reference(ref, path, getCommits, showLoading, hideLoading));
 						});
 
 						hideLoading();
@@ -125,11 +125,13 @@ require(['jquery'], function() {
 					// Create repository objects
 					$(reposJson).each(function(i, repoJson) {
 
+						var repo = new Repository(repoJson.path, repoJson.alias, 
+							"", getReferences, showEditRepoModal, showRemoveRepoModal, showLoading, hideLoading);					
+						repositories.add(repo);
 						// Get currently checked out branch
 						$.get(getBaseUrl("/git/branch/current?path=" + repoJson.path),
 							function success(branch) {
-								repositories.add(new Repository(repoJson.path, repoJson.alias, 
-									branch, getReferences, showEditRepoModal, showRemoveRepoModal, showLoading, hideLoading));
+								repo.model.set("branch", branch);
 							});
 					});
 

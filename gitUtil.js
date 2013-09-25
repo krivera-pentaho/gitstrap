@@ -36,7 +36,7 @@ var getCommits = exports.getCommits = function(path, branch, results, callback) 
 }
 
 var getDiffNames = exports.getDiffNames = function(path, branch, sha1, sha2, callback) {
-	_switchAndMaintainBranch(branch, function(checkoutCallback) {
+	_switchAndMaintainBranch(branch, function(checkoutCallback, message) {
 		git.diffNames(path, sha1, sha2, function(diffNames) {
 			checkoutCallback(function() {
 				callback(JSON.stringify(diffNames));
@@ -102,20 +102,35 @@ var getDiffFile = exports.getDiffFile = function(path, branch, sha1, sha2, fileN
 	});	
 }
 
+var pull = exports.pull = function(path, pullToBranch, remote, branch, callback) {
+	_switchAndMaintainBranch(branch, function(checkoutCallback, message) {
+		if (message.error.search("error:") > -1) {
+			callback(JSON.stringify(message));
+			return;
+		}
+
+		git.pull(path, remote, branch, function(data) {
+			checkoutCallback(function() {
+				callback(JSON.stringify(data));
+			});
+		});		
+	});	
+}
+
 function _switchAndMaintainBranch(branch, action) {
 	
 	// Get current branch
 	getCurrentBranch(path, function(currentBranch) {
 
 		// Checkout the branch we want to see the history of
-		git.checkout(path, branch, function() {
+		git.checkout(path, branch, function(message) {
 
 			// Perform the action after switching branches
 			action(function(callback) {
 
 				// Re-checkout branch
 				git.checkout(path, currentBranch, callback);
-			});		
+			}, message);		
 		});	
 	});
 }
