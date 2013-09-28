@@ -15,7 +15,10 @@ define(['AlertBuilder', 'jquery', 'handlebars', 'backbone'], function(AlertBuild
 		template : Handlebars.compile(
 			"<div class='git-object reference-object img-rounded' {{#if isLocalReference}} data-toggle='context' data-target='#reference-object-context-menu' {{/if}}>" +
 				"<div class='title text-center' title='{{reference}}'>{{title}}</div>"+
-				"<div class='content'>"+					
+				"<div class='content'>"+
+					"{{#if isNotLocalReference}}" +
+						"<div><strong>Branch: </strong>{{branch}}</div>" +
+					"{{/if}}" +
 				"</div>" +
 			"</div>"),
 
@@ -26,13 +29,18 @@ define(['AlertBuilder', 'jquery', 'handlebars', 'backbone'], function(AlertBuild
 				.replace(remoteRef, "")
 				.replace(tagRef, "");
 
+			var remote = title.split("/")[0];
+			var branch = title.split("/")[1];
+
 			var reference = this.model.get("reference");
 			var isLocalReference = reference.search(localRef) > -1;
 			this.setElement(
 				this.template({
-					title: title,
+					title: remote,
 					reference: reference,
-					isLocalReference: isLocalReference
+					isLocalReference: isLocalReference,
+					isNotLocalReference: !isLocalReference,
+					branch: branch
 				}));
 
 			var path = this.model.get("path");

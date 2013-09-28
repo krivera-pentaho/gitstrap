@@ -10,17 +10,28 @@ define(['AlertBuilder','jquery', 'backbone', 'handlebars'], function(AlertBuilde
 			"<div class='git-object repository-object img-rounded' data-toggle='context' data-target='#repository-object-context-menu'>"+
 				"<div class='title text-center'>{{alias}}</div>"+
 				"<div class='content'>"+
-					"<div><strong>Branch:</strong> {{branch}}</div>"+
-					"<div title='{{path}}'><strong>Path:</strong> {{path}}</div>"+
+					"<div class='{{statusClass}}'><strong>Status:</strong> {{status}}</div>"+
+					"<div><strong>Branch:</strong> {{branch}}</div>"+					
+					"<div title='{{path}}'><strong>Path:</strong> {{path}}</div>"+					
 					"{{content}}"+
 				"</div>"+
 			"</div>"),
 
 		render : function() {
 			var self = this;
+
+			var statusClass = "text-info";
+			switch(this.model.get("status")) {
+				case "Unmodified": statusClass = "text-success"; break;
+				case "Modified": statusClass = "text-warning"; break;
+				case "Conflict": statusClass = "text-error"; break;
+			}
+
+			var attrs = this.model.attributes;
+			attrs.statusClass = statusClass;
 							
 			this.setElement(
-				this.template(this.model.attributes));
+				this.template(attrs));
 
 			var path = this.model.get("path");
 			var alias = this.model.get("alias");
@@ -88,11 +99,12 @@ define(['AlertBuilder','jquery', 'backbone', 'handlebars'], function(AlertBuilde
 		}
 	});
 	
-	return function(path, alias, branch, getReferences, showEditRepoModal, showRemoveRepoModal, showLoading, hideLoading) {		
+	return function(path, alias, getReferences, showEditRepoModal, showRemoveRepoModal, showLoading, hideLoading) {		
 		this.model = new Model({
 			path: path,
 			alias: alias,
-			branch: branch,
+			branch: "",
+			status: "",
 			id: alias
 		});
 

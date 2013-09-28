@@ -742,12 +742,102 @@ module.exports = (function() {
 				});
 			}
 		}
+
+		/*
+		 * show() - public
+		 * shows the remotes
+		 */
+		function show(path, callback) {
+			var cmd = 'git remote show';
+			if (repository(path)) {
+				exec(cmd, function(err, stdout, stderr) {
+					if (err || stderr) {
+						console.log(err || stderr);
+						if (callback) {
+							process.chdir(back);
+							callback.call(this, {
+								error : err || stderr
+							});
+						}
+					// all is good
+					} else {
+						var list = stdout.split('\n');
+
+						if (callback) {
+							process.chdir(back);
+							callback.call(this, list);
+						}
+					}
+				});
+			} else {
+				callback.call(this, {
+					error : 'Invalid repository'
+				});
+			}
+		}
+
+		// Shows branches of a remote
+		function showBranches(path, remote, callback) {
+			var cmd = 'git remote show ' + remote;
+			if (repository(path)) {
+				exec(cmd, function(err, stdout, stderr) {
+					if (err || stderr) {
+						console.log(err || stderr);
+						if (callback) {
+							process.chdir(back);
+							callback.call(this, {
+								error : err || stderr
+							});
+						}
+					// all is good
+					} else {
+						var list = [],
+						    parseme = stdout.split('\n');
+						
+						var startParsing = false;
+						parseme.forEach(function(val, key) {
+
+							if (startParsing) {
+								if (val.search("    ") == -1) {
+									startParsing = false;									
+									return;
+								}
+
+								val = val.replace("    ", "");
+								for (var i = 0; i < val.length; i++) {
+									if (val.charAt(i) == ' ') {
+										list.push(val.substring(0, i));
+										return;
+									}
+								}
+							}
+
+							if (val.search("Remote branch") > -1) {
+								startParsing = true;								
+							}							
+						});
+
+						if (callback) {
+							process.chdir(back);
+							callback.call(this, list);
+						}
+					}
+				});
+			} else {
+				callback.call(this, {
+					error : 'Invalid repository'
+				});
+			}
+		}
+
 		
 		return {
 			add : add,
 			update : update,
 			remove : remove,
-			list : list
+			list : list,
+			show : show,
+			showBranches : showBranches
 		}
 	})();
 	

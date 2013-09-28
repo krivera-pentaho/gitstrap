@@ -177,6 +177,7 @@ server.get("/git/diff/file", function(request, response) {
 	});
 })
 
+// Pulls data from a remote resource
 server.post("/git/pull", function(request, response) {
 	var queryData = url.parse(request.url, true).query;
 	var path = queryData.path;
@@ -188,7 +189,18 @@ server.post("/git/pull", function(request, response) {
 		response.writeHead(200);
 		response.end(data);
 	});
-})
+});
+
+// Retrieves the status of the repository
+server.get("/git/status", function(request, response) {
+	var queryData = url.parse(request.url, true).query;
+	var path = queryData.path;
+
+	gitUtil.getStatus(path, function(status) {
+		response.writeHead(200);
+		response.end(status);
+	});
+});
 
 function readHttpFile(path, encoding, callback) {
 	var url = httpDir + "/http/" + path;

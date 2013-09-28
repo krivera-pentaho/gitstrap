@@ -55,6 +55,12 @@ define(['jquery','backbone'], function() {
 
 		this.remove = function(id) {
 			self.collection.remove(self.collection.get(id));
-		}	
+		}
+
+		this.each = function(exec) {
+			$(self.collection.models).each(function(i, model) {
+				exec(model);
+			});
+		}
 	}
 });

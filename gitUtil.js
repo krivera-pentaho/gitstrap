@@ -20,8 +20,26 @@ var getCurrentBranch = exports.getCurrentBranch = function(path, callback) {
 }
 
 var getReferences = exports.getReferences = function(path, callback) {
-	git.references(path, function(references){
-		callback(references.toString());
+	git.references(path, function(references) {
+		git.remote.show(path, function(remotes) {
+			var blankIndex = remotes.indexOf('');
+			if (blankIndex > -1) {
+				remotes.splice(blankIndex, 1);
+			}
+			remotes.forEach(function(remote, key) {
+				git.remote.showBranches(path, remote, function(branches) {
+					branches.forEach(function(branch, branchKey) {		
+						var remoteBranch = "refs/remotes/" + remote + "/" + branch;
+
+						if (references.indexOf(remoteBranch) == -1) {
+							references.push(remoteBranch);
+						}							
+					})					
+				});
+			});
+			
+			callback(references.toString());
+		});
 	});
 }
 
@@ -112,20 +130,33 @@ var pull = exports.pull = function(path, pullToBranch, remote, branch, callback)
 	});	
 }
 
+var getStatus = exports.getStatus = function(path, callback) {
+	git.status(path, function(status) {
+		callback(JSON.stringify(status));
+	})
+}
+
 function _switchAndMaintainBranch(path, branch, action) {
 	
 	// Get current branch
 	getCurrentBranch(path, function(currentBranch) {
 
-		// Checkout the branch we want to see the history of
-		git.checkout(path, branch, function(message) {
+		// Checkout branch and switch back if branches are different
+		if (currentBranch != branch) {
+			// Checkout the branch we want to see the history of
+			git.checkout(path, branch, function(message) {
 
-			// Perform the action after switching branches
-			action(function(callback) {
+				// Perform the action after switching branches
+				action(function(callback) {
 
-				// Re-checkout branch
-				git.checkout(path, currentBranch, callback);
-			}, message);		
-		});	
+					// Re-checkout branch
+					git.checkout(path, currentBranch, callback);
+				}, message);		
+			});	
+		} else {
+			action(function(callback){
+				callback();
+			});				
+		}
 	});
 }

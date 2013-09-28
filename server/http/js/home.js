@@ -14,11 +14,11 @@ require.config({
 require(['jquery'], function() {
 	require([
 		'AlertBuilder',
+		'underscore',
 		'handlebars', 
 		'jquery-ui', 
 		'bootstrap', 
 		'bootstrap-contextmenu',
-		'underscore',
 		'backbone'], function(AlertBuilder) {
 
 		// Backbone repository objects
@@ -130,18 +130,46 @@ require(['jquery'], function() {
 					// Create repository objects
 					$(reposJson).each(function(i, repoJson) {
 
-						var repo = new Repository(repoJson.path, repoJson.alias, 
-							"", getReferences, showEditRepoModal, showRemoveRepoModal, showLoading, hideLoading);					
+						var repo = new Repository(repoJson.path, repoJson.alias, getReferences, showEditRepoModal, showRemoveRepoModal, showLoading, hideLoading);					
 						repositories.add(repo);
-						// Get currently checked out branch
-						$.get(getBaseUrl("/git/branch/current?path=" + repoJson.path),
-							function success(branch) {
-								repo.model.set("branch", branch);
-							});
 					});
 
+					autoRefreshRepositories();
 					hideLoading();
 				});
+
+			function autoRefreshRepositories() {
+				repositories.each(function(repoModel) {
+					updateRepository(repoModel);
+				});
+
+				setTimeout(autoRefreshRepositories, 10000);
+			}
+
+			function updateRepository(repoModel) {
+				$.get(getBaseUrl("/git/status?path=" + repoModel.get("path")), 
+					function success(statusStr) {
+						var status = eval("(" + statusStr + ")");
+
+						var state = "Unmodified";
+						for (key in status) {
+							if (status[key].length > 0) {
+								unmodified = false;
+
+								state = "Modified";
+							}
+						}								
+
+						// Get currently checked out branch
+						$.get(getBaseUrl("/git/branch/current?path=" + repoModel.get("path")),
+							function success(branch) {
+								repoModel.set({
+									"branch": branch, 
+									"status": state
+								});
+							});
+					});
+			}
 
 			/***************** MODAL ACTIONS *****************/
 			function repositoryAdd(alias, path, suppressAlert) {
@@ -308,7 +336,9 @@ require(['jquery'], function() {
 		}
 
 		function showLoading() {
-			$("#loading-modal").modal("show");
+			$("#loading-modal").modal({
+				backdrop: "static"
+			});
 		}
 
 		function hideLoading() {
