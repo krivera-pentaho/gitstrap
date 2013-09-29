@@ -1,4 +1,4 @@
-define(['jquery', 'jquery-ui', 'handlebars', 'backbone'], function() {
+define(['jquery', 'jquery-ui', 'handlebars', 'underscore', 'backbone'], function() {
 
 	var diffNamesObjectTemplate = Handlebars.compile(
 		"<table class='table table-hover table-striped table-bordered table-condensed diff-names-object'>" +

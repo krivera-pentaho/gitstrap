@@ -202,6 +202,18 @@ server.get("/git/status", function(request, response) {
 	});
 });
 
+server.post("/git/rebase", function(request, response) {
+	var queryData = url.parse(request.url, true).query;
+	var path = queryData.path;
+	var branch = queryData.branch;
+	var rebaseFromBranch = queryData.rebaseFromBranch;
+
+	gitUtil.rebase(path, branch, rebaseFromBranch, function(status) {
+		response.writeHead(200);
+		response.end(status);
+	});
+});
+
 function readHttpFile(path, encoding, callback) {
 	var url = httpDir + "/http/" + path;
 	fs.readFile(url, encoding, callback);

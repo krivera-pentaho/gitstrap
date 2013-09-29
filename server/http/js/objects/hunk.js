@@ -1,4 +1,4 @@
-define(['jquery', 'handlebars', 'backbone'], function() {
+define(['jquery', 'handlebars', 'underscore', 'backbone'], function() {
 
 	var hunkTemplate = Handlebars.compile(
 		"<table class='table table-condensed table-bordered hunk-objects'>"+

@@ -1,4 +1,4 @@
-define(['jquery', 'backbone'], function(){
+define(['jquery', 'underscore', 'backbone'], function(){
 	var Collection = Backbone.Collection.extend();
 	var Model = Backbone.Model.extend({
 			defaults : {

@@ -1,4 +1,4 @@
-define(['jquery', 'handlebars', 'backbone'], function(){
+define(['jquery', 'handlebars', 'underscore', 'backbone'], function(){
 
 	var $localRefs = $("#local-references");
 	var localRef = "refs/heads/";

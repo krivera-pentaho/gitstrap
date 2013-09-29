@@ -1,4 +1,4 @@
-define(['jquery','backbone'], function() {	
+define(['jquery', 'underscore', 'backbone'], function() {	
 
 	var Collection = Backbone.Collection.extend({
 	});
@@ -16,8 +16,13 @@ define(['jquery','backbone'], function() {
 			// Bind on change
 			this.collection.on("change", function(repositoryModel) {
 				var view = repositoryModel.view;
+
+				var clearAll = view.$el.hasClass("active");
 				view.$el.replaceWith(view.render().$el);
-				self.options.clear();
+
+				if (clearAll) {
+					self.options.clear();	
+				}
 			});
 
 			// Bind on remove

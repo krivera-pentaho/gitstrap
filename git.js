@@ -1084,6 +1084,35 @@ module.exports = (function() {
 			});
 		}
 	}
+
+	function rebase(path, branch, callback) {
+		if (repository(path)) {
+			exec('git rebase ' + branch, function(err, stdout, stderr) {
+
+				if ((stdout) || stderr.indexOf('Switched') > -1) {
+					if (callback) {
+						process.chdir(back);
+						callback.call(this, {
+							message : (stdout),
+							error: (stderr)
+						});
+					}
+				} else if (err || stderr) {
+					console.log(err || stderr);
+					if (callback) {
+						process.chdir(back);
+						callback.call(this, {
+							error : err || stderr
+						});
+					}
+				}  
+			});
+		} else {
+			callback.call(this, {
+				error : 'Invalid repository'
+			});
+		}
+	}
 	
 	// public methods
 	return {
@@ -1106,7 +1135,8 @@ module.exports = (function() {
 		clone : clone,
 		references : references,
 		diffNames : diffNames,
-		diff : diff
+		diff : diff,
+		rebase : rebase
 	};
   
 })();

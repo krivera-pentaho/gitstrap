@@ -28,17 +28,23 @@ var getReferences = exports.getReferences = function(path, callback) {
 			}
 			remotes.forEach(function(remote, key) {
 				git.remote.showBranches(path, remote, function(branches) {
-					branches.forEach(function(branch, branchKey) {		
+					branches.forEach(function(branch, branchKey) {
 						var remoteBranch = "refs/remotes/" + remote + "/" + branch;
 
 						if (references.indexOf(remoteBranch) == -1) {
 							references.push(remoteBranch);
-						}							
+						}
+
+						if (key == remotes.length-1 && branchKey == branches.length-1) {
+							callback(references.toString());
+						}
 					})					
 				});
 			});
 			
-			callback(references.toString());
+			if (remotes.length == 0) {
+				callback(references.toString());
+			}			
 		});
 	});
 }
@@ -133,6 +139,16 @@ var pull = exports.pull = function(path, pullToBranch, remote, branch, callback)
 var getStatus = exports.getStatus = function(path, callback) {
 	git.status(path, function(status) {
 		callback(JSON.stringify(status));
+	})
+}
+
+var rebase = exports.rebase = function(path, branch, rebaseFromBranch, callback) {
+	_switchAndMaintainBranch(path, branch, function(checkoutCallback) {
+		git.rebase(path, rebaseFromBranch, function(message) {
+			checkoutCallback(function(){
+				callback(JSON.stringify(message));
+			});
+		});
 	})
 }
 

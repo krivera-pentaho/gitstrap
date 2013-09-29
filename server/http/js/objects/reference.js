@@ -1,4 +1,4 @@
-define(['AlertBuilder', 'jquery', 'handlebars', 'backbone'], function(AlertBuilder) {
+define(['AlertBuilder', 'jquery', 'handlebars', 'underscore', 'backbone'], function(AlertBuilder) {
 
 	var localRef = "refs/heads/";
 	var remoteRef = "refs/remotes/";
@@ -13,7 +13,7 @@ define(['AlertBuilder', 'jquery', 'handlebars', 'backbone'], function(AlertBuild
 
 	var View = Backbone.View.extend({
 		template : Handlebars.compile(
-			"<div class='git-object reference-object img-rounded' {{#if isLocalReference}} data-toggle='context' data-target='#reference-object-context-menu' {{/if}}>" +
+			"<div class='git-object reference-object img-rounded'>" +
 				"<div class='title text-center' title='{{reference}}'>{{title}}</div>"+
 				"<div class='content'>"+
 					"{{#if isNotLocalReference}}" +
@@ -50,7 +50,7 @@ define(['AlertBuilder', 'jquery', 'handlebars', 'backbone'], function(AlertBuild
 
 				if (isLocalReference) {
 					this.$el
-						.bind("click contextmenu", function() {
+						.bind("click", function() {
 							$this = $(this);
 							if ($this.attr("was-dropped") == "true" || $this.attr("dragging") == "true") {
 								$this.attr("was-dropped", "false");
@@ -93,9 +93,35 @@ define(['AlertBuilder', 'jquery', 'handlebars', 'backbone'], function(AlertBuild
 						hoverClass: "ui-state-highlight",
 
 						drop: function(event, ui) {
-							if (self.$el.hasClass(localReferenceClass)){
+
+							function disableSelection() {
+								if (self.$el.hasClass("active")){
+									self.options.clearCommits();
+									self.$el.removeClass("active");
+								}
+							}
+							var $appendMessageTo = $("#repository-references-container .alert-container");
+
+							if (self.$el.hasClass(localReferenceClass)) {
 								if (ui.helper.hasClass(localReferenceClass)) {
-									// perform rebase
+
+									self.options.showLoading();
+									$.post(getBaseUrl("/git/rebase" +
+										"?path=" + path +
+										"&branch=" + title + 
+										"&rebaseFromBranch=" + ui.helper.attr("reference")), 
+										function success(data) {
+											var message = eval("(" + data + ")");
+
+											if (message.error.search("error:") > -1) {
+												AlertBuilder.build("Error performing rebase", "ERROR", $appendMessageTo);
+											} else {
+												disableSelection();
+												AlertBuilder.build("Successfuly rebased " + title, "SUCCESS", $appendMessageTo);
+											}
+
+											self.options.hideLoading();
+										});
 								} else if (ui.helper.hasClass(remoteReferenceClass)) {
 									var remoteAndBranch = ui.helper.attr("reference").split("/");
 
@@ -107,21 +133,14 @@ define(['AlertBuilder', 'jquery', 'handlebars', 'backbone'], function(AlertBuild
 										"&remote=" + remoteAndBranch[0] + 
 										"&branch=" + remoteAndBranch[1]), function success(data) {
 
-											var messages = eval("(" + data + ")");
-											var $appendMessageTo = $("#repository-references-container .alert-container");
+											var messages = eval("(" + data + ")");											
 											if (messages.error.search("error:") > -1) {
 												AlertBuilder.build("Error pulling from remote (" + messages.error + ")", "ERROR", $appendMessageTo);
 											} else {
-												if (self.$el.hasClass("active")){
-													self.options.clearCommits();
-													self.$el.removeClass("active");
-												}
-												
+												disableSelection();												
 												AlertBuilder.build("Pull from '" + ui.helper.attr("reference") + "'' to '" + title + "'' successful", "SUCCESS", $appendMessageTo);
 											}
 
-											
-											
 											self.options.hideLoading();
 									})
 								}	

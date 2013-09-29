@@ -134,8 +134,8 @@ require(['jquery'], function() {
 						repositories.add(repo);
 					});
 
-					autoRefreshRepositories();
 					hideLoading();
+					autoRefreshRepositories();					
 				});
 
 			function autoRefreshRepositories() {
@@ -147,6 +147,10 @@ require(['jquery'], function() {
 			}
 
 			function updateRepository(repoModel) {
+				if (loadingModalShowing) {
+					return;
+				}
+
 				$.get(getBaseUrl("/git/status?path=" + repoModel.get("path")), 
 					function success(statusStr) {
 						var status = eval("(" + statusStr + ")");
@@ -335,15 +339,19 @@ require(['jquery'], function() {
 			$("#repo-remove-confirm-modal").modal("show");
 		}
 
+		var loadingModalShowing = false;
 		function showLoading() {
 			$("#loading-modal").modal({
 				backdrop: "static"
 			});
+
+			loadingModalShowing = true;
 		}
 
 		function hideLoading() {
+			loadingModalShowing = false;
 			setTimeout(function(){
-				$("#loading-modal").modal("hide");		
+				$("#loading-modal").modal("hide");				
 			}, 250);			
 		}
 	});
