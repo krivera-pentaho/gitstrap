@@ -76,6 +76,8 @@ var checkoutBranch = exports.checkoutBranch = function(path, branch, callback) {
 }
 
 var getDiffFile = exports.getDiffFile = function(path, branch, sha1, sha2, fileName, callback) {
+	fileName = fileName.replace("\.", "\\.");
+
 	_switchAndMaintainBranch(path, branch, function(checkoutCallback) {
 		git.diff(path, sha1, sha2, function(fileDiffs) {
 
