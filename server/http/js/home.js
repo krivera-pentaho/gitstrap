@@ -30,14 +30,17 @@ require(['jquery'], function() {
 			'objects/commits',
 			'objects/commit',
 			'objects/hunks',
-			'objects/hunk'], function(Repositories, Repository, References, Reference, Commits, Commit, Hunks, Hunk) {	
+			'objects/hunk',
+			'objects/changes',
+			'objects/change'], function(Repositories, Repository, References, Reference, Commits, Commit, Hunks, Hunk, Changes, Change) {	
 
 			/*************** Backbone Object Interactions ***************/
 			var repositories = new Repositories($("#repository-objects"), $("#repository-objects-container"), clear);
 			var references = new References($("#repository-references-container"));
 			var commits = new Commits($("#commit-objects"), $("#commit-history-container"));
 			var hunks = new Hunks($("#file-diff-objects"), $("#file-diffs-container"))
-
+			var changes = new Changes($("#staged-changes"), $("#unstaged-changes"), $("#untracked-changes"));
+			
 			function clearHunks() {
 				hunks.clear();
 			}
@@ -51,6 +54,32 @@ require(['jquery'], function() {
 				references.clear();
 				commits.clear();
 				hunks.clear();
+			}
+
+			function getChanges(path) {
+				changes.clear();
+
+				$.get("/git/status?path="+path, function success(data) {
+					var changesJson = eval("(" + data + ")");
+
+					// Staged
+					$(changesJson.staged).each(function(i, changeJson){
+						changes.addStagedChange(new Change(path, changeJson.file, 
+							changeJson.status, "staged"));
+					});
+
+					// Unstaged
+					$(changesJson.not_staged).each(function(i, changeJson){
+						changes.addUnstagedChange(new Change(path, changeJson.file, 
+							changeJson.status, "unstaged"));
+					});
+
+					// Untracked
+					$(changesJson.untracked).each(function(i, changeFile){
+						changes.addUntrackedChange(new Change(path, changeFile, 
+							"new file", "untracked"));
+					});
+				});
 			}
 
 			function getFileDiff(path, branch, sha1, sha2, fileName) {
@@ -110,7 +139,13 @@ require(['jquery'], function() {
 
 				showLoading();
 				$.get(getBaseUrl("/git/refs?path=") + path, 
-					function success(data){						
+					function success(data){
+						if (data.search("error:") > -1) {
+							AlertBuilder.build(data.replace("error: ", ""), "ERROR", $("#alert-bar"));
+							hideLoading();
+							return;
+						}
+
 						var refs = data.split(",");
 
 						$(refs).each(function(i, ref) {
@@ -130,7 +165,8 @@ require(['jquery'], function() {
 					// Create repository objects
 					$(reposJson).each(function(i, repoJson) {
 
-						var repo = new Repository(repoJson.path, repoJson.alias, getReferences, showEditRepoModal, showRemoveRepoModal, showLoading, hideLoading);					
+						var repo = new Repository(repoJson.path, repoJson.alias, getReferences, getChanges, 
+							showEditRepoModal, showRemoveRepoModal, showStageChangesModal, showLoading, hideLoading);					
 						repositories.add(repo);
 					});
 
@@ -205,8 +241,8 @@ require(['jquery'], function() {
 												if (!suppressAlert) {
 													AlertBuilder.build("Repository Added", "SUCCESS", $("#alert-bar"));	
 												}
-												repositories.add(new Repository(path, alias, branch, 
-													getReferences, showEditRepoModal, showRemoveRepoModal, showLoading, hideLoading));
+												repositories.add(new Repository(path, alias, branch, getReferences, getChanges,
+													showEditRepoModal, showRemoveRepoModal, showStageChangesModal, showLoading, hideLoading));
 											});
 									}).fail(function error() {
 										AlertBuilder.build("An error occured writing the configuration", "ERROR", $("#alert-bar"));
@@ -297,7 +333,7 @@ require(['jquery'], function() {
 		});
 
 		// Init options on modal
-		$("#repo-info-modal, #repo-remove-confirm-modal").modal({
+		$("#repo-info-modal, #repo-remove-confirm-modal, #stage-changes-modal").modal({
 			keyboard: true,
 			show: false
 		});
@@ -337,6 +373,10 @@ require(['jquery'], function() {
 
 		function showRemoveRepoModal() {
 			$("#repo-remove-confirm-modal").modal("show");
+		}
+
+		function showStageChangesModal() {
+			$("#stage-changes-modal").modal("show");
 		}
 
 		var loadingModalShowing = false;

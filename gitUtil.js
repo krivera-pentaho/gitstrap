@@ -28,17 +28,21 @@ var getReferences = exports.getReferences = function(path, callback) {
 			}
 			remotes.forEach(function(remote, key) {
 				git.remote.showBranches(path, remote, function(branches) {
-					branches.forEach(function(branch, branchKey) {
-						var remoteBranch = "refs/remotes/" + remote + "/" + branch;
+					if (branches.forEach) {
+						branches.forEach(function(branch, branchKey) {
+							var remoteBranch = "refs/remotes/" + remote + "/" + branch;
 
-						if (references.indexOf(remoteBranch) == -1) {
-							references.push(remoteBranch);
-						}
+							if (references.indexOf(remoteBranch) == -1) {
+								references.push(remoteBranch);
+							}
 
-						if (key == remotes.length-1 && branchKey == branches.length-1) {
-							callback(references.toString());
-						}
-					})					
+							if (key == remotes.length-1 && branchKey == branches.length-1) {
+								callback(references.toString());
+							}
+						})					
+					} else {
+						callback("error: Error retrieving branches");
+					}				
 				});
 			});
 			
@@ -151,6 +155,24 @@ var rebase = exports.rebase = function(path, branch, rebaseFromBranch, callback)
 				callback(JSON.stringify(message));
 			});
 		});
+	})
+}
+
+var stageFiles = exports.stageFiles = function(path, files, callback) {
+	git.add(path, files.split(","), function(err) {
+		callback(JSON.stringify(err));
+	})
+}
+
+var unstageFiles = exports.unstageFiles = function(path, files, callback) {
+	git.unstage(path, files.split(","), function(err) {
+		callback(JSON.stringify(err));
+	})
+}
+
+var removeFiles = exports.removeFiles = function(path, files, callback) {
+	git.remove(path, files.split(","), function(err) {
+		callback(JSON.stringify(err));
 	})
 }
 

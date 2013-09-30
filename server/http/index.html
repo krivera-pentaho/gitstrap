@@ -103,7 +103,7 @@
 				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
 				<h3 class="add">Remove Repository</h3>
 			</div>
-			<div class="modal-body form-horizontal">
+			<div class="modal-body">
 				<p>Are you sure you want to remove the repository?</p>
 			</div>
 			<div class="modal-footer">
@@ -114,14 +114,9 @@
 
 		<div id="repository-object-context-menu">
 			<ul class="dropdown-menu" role="menu">
+				<li><a tabindex="-1" href="#" id="stage-changes-context">Stage Changes</a></li>
 				<li><a tabindex="-1" href="#" id="edit-repo-context">Edit</a></li>
 				<li><a tabindex="-1" href="#" id="remove-repo-context">Remove</a></li>
-			</ul>
-		</div>
-
-		<div id="reference-object-context-menu">
-			<ul class="dropdown-menu" role="menu">
-				<li><a tabindex="-1" href="#" id="update-branch-context">Update from Upstream</a></li>
 			</ul>
 		</div>
 
@@ -129,8 +124,38 @@
 			<div class="modal-header">
 				<h4>Loading</h4>
 			</div>
-			<div class="active progress progress-striped">
-				<div class="bar" style="width: 100%;"></div>
+			<div class="modal-body">
+				<div class="active progress progress-striped">
+					<div class="bar" style="width: 100%;"></div>
+				</div>
+			</div>
+		</div>
+
+		<div id="stage-changes-modal" class="modal hide fade">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+				<h3>Stage Changes for Commit</h3>
+			</div>
+			<div class="modal-body">
+				<div id="staged-changes-wrapper">
+					<h5>Staged for Commit</h5>
+					<table id="staged-changes" class="table table-hover table-bordered table-condensed well">
+					</table>
+				</div>
+
+				<div id="unstaged-changes-wrapper">
+					<h5>Unstaged Changes</h5>
+					<table id="unstaged-changes" class="table table-hover table-bordered table-condensed well"></table>
+				</div>
+
+				<div id="untracked-changes-wrapper">
+					<h5>Untracked Changes</h5>
+					<table id="untracked-changes" class="table table-hover table-bordered table-condensed well"></table>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<a href="#" class="btn" data-dismiss="modal">Cancel</a>				
+				<a id="stage-changes-btn" href="#" class="btn btn-primary" data-dismiss="modal">Next</a>
 			</div>
 		</div>
 	</body>

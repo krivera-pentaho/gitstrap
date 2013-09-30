@@ -1,7 +1,6 @@
 define(['jquery', 'underscore', 'backbone'], function() {	
 
-	var Collection = Backbone.Collection.extend({
-	});
+	var Collection = Backbone.Collection.extend();
 
 	var View = Backbone.View.extend({
 		initialize : function() {

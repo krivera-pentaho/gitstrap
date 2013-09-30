@@ -71,7 +71,7 @@
 	word-break: break-all;
 }
 
-.repository-object, .local-reference-object, .commit-object, .remote-reference-object {
+.repository-object, .local-reference-object, .commit-object, .remote-reference-object, .change-object {
 	cursor: pointer;
 }
 

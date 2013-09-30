@@ -202,6 +202,7 @@ server.get("/git/status", function(request, response) {
 	});
 });
 
+// Perform a rebase of one branch onto another
 server.post("/git/rebase", function(request, response) {
 	var queryData = url.parse(request.url, true).query;
 	var path = queryData.path;
@@ -214,12 +215,42 @@ server.post("/git/rebase", function(request, response) {
 	});
 });
 
+server.post("/git/staging/add", function(request, response) {
+	var queryData = url.parse(request.url, true).query;
+	var path = queryData.path;
+	var files = queryData.files;
+
+	gitUtil.stageFiles(path, files, function(err) {
+		response.writeHead(200);
+		response.end(err);
+	});
+})
+
+server.post("/git/staging/remove", function(request, response) {
+	var queryData = url.parse(request.url, true).query;
+	var path = queryData.path;
+	var files = queryData.files;
+
+	gitUtil.removeFiles(path, files, function(err) {
+		response.writeHead(200);
+		response.end(err);
+	});
+})
+
+server.post("/git/staging/unstage", function(request, response) {
+	var queryData = url.parse(request.url, true).query;
+	var path = queryData.path;
+	var files = queryData.files;
+
+	gitUtil.unstageFiles(path, files, function(err) {
+		response.writeHead(200);
+		response.end(err);
+	});
+})
 function readHttpFile(path, encoding, callback) {
 	var url = httpDir + "/http/" + path;
 	fs.readFile(url, encoding, callback);
 }
 
-// Listen on port 8080
+// Listen on port 8081
 server.listen(8081);
-
-console.log("Server running on localhost:8080");

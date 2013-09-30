@@ -91,6 +91,10 @@ define(['AlertBuilder','jquery', 'backbone', 'handlebars'], function(AlertBuilde
 								self.options.showRemoveRepoModal(); break;
 							case "edit-repo-context": 
 								self.options.showEditRepoModal(alias, path); break;
+							case "stage-changes-context":								
+								self.options.showStageChangesModal(); 
+								self.options.getChanges(path);
+								break;
 						}
 					}
 				});
@@ -99,7 +103,8 @@ define(['AlertBuilder','jquery', 'backbone', 'handlebars'], function(AlertBuilde
 		}
 	});
 	
-	return function(path, alias, getReferences, showEditRepoModal, showRemoveRepoModal, showLoading, hideLoading) {		
+	return function(path, alias, getReferences, getChanges, showEditRepoModal, 
+		showRemoveRepoModal, showStageChangesModal, showLoading, hideLoading) {		
 		this.model = new Model({
 			path: path,
 			alias: alias,
@@ -111,8 +116,10 @@ define(['AlertBuilder','jquery', 'backbone', 'handlebars'], function(AlertBuilde
 		this.view = new View({
 			model: this.model,
 			getReferences: getReferences,
+			getChanges: getChanges,
 			showEditRepoModal: showEditRepoModal,
 			showRemoveRepoModal: showRemoveRepoModal,
+			showStageChangesModal: showStageChangesModal,
 			showLoading: showLoading,
 			hideLoading: hideLoading
 		});
