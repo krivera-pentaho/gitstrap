@@ -315,7 +315,8 @@ module.exports = (function() {
 			var status = {
 				staged : [],
 				not_staged : [],
-				untracked : untracked.split('\n').slice(0, untracked.split('\n').length - 1)
+				untracked : untracked.split('\n').slice(0, untracked.split('\n').length - 1),
+				conflict: []
 			},
 			// use this var to switch between arrays to push to
 			file_status = null,
@@ -332,6 +333,8 @@ module.exports = (function() {
 				// or switch to untracked array
 				} else if (line.toLowerCase().indexOf('untracked files') > -1) {
 					file_status = 'untracked';
+				} else if (line.toLowerCase().indexOf('unmerged paths') > -1) {
+					file_status = 'conflict'
 				}
 				// check if the line contains a keyword
 				if (line.indexOf('modified') > -1 ||

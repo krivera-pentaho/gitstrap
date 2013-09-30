@@ -197,6 +197,11 @@ require(['jquery'], function() {
 								unmodified = false;
 
 								state = "Modified";
+
+								if (key == 'conflict') {
+									state = "Conflict";
+									break;
+								}
 							}
 						}								
 
