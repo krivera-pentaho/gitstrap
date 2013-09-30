@@ -8,7 +8,7 @@ define(['AlertBuilder','jquery', 'backbone', 'handlebars'], function(AlertBuilde
 	var View = Backbone.View.extend({
 		template: Handlebars.compile(
 			"<div class='git-object repository-object img-rounded' data-toggle='context' data-target='#repository-object-context-menu'>"+
-				"<div class='title text-center'>{{alias}}</div>"+
+				"<div class='title text-center' title='{{alias}}'>{{shortAlias}}</div>"+
 				"<div class='content'>"+
 					"<div class='{{statusClass}}'><strong>Status:</strong> {{status}}</div>"+
 					"<div><strong>Branch:</strong> {{branch}}</div>"+					
@@ -29,6 +29,11 @@ define(['AlertBuilder','jquery', 'backbone', 'handlebars'], function(AlertBuilde
 
 			var attrs = this.model.attributes;
 			attrs.statusClass = statusClass;
+
+			attrs.shortAlias = attrs.alias;
+			if (attrs.shortAlias.length > 20) {
+				attrs.shortAlias = attrs.shortAlias.substr(0,20) + "...";
+			}
 							
 			this.setElement(
 				this.template(attrs));
