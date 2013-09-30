@@ -38,6 +38,11 @@ define(['AlertBuilder','jquery', 'backbone', 'handlebars'], function(AlertBuilde
 			this.setElement(
 				this.template(attrs));
 
+			// Do not bind any functionality to repo
+			if (this.model.get("status") == "ERROR") {
+				return this;
+			}
+
 			var path = this.model.get("path");
 			var alias = this.model.get("alias");
 			var branch = this.model.get("branch");

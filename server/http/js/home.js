@@ -187,33 +187,45 @@ require(['jquery'], function() {
 					return;
 				}
 
-				$.get(getBaseUrl("/git/status?path=" + repoModel.get("path")), 
-					function success(statusStr) {
-						var status = eval("(" + statusStr + ")");
-
-						var state = "Unmodified";
-						for (key in status) {
-							if (status[key].length > 0) {
-								unmodified = false;
-
-								state = "Modified";
-
-								if (key == 'conflict') {
-									state = "Conflict";
-									break;
-								}
-							}
-						}								
-
-						// Get currently checked out branch
-						$.get(getBaseUrl("/git/branch/current?path=" + repoModel.get("path")),
-							function success(branch) {
-								repoModel.set({
-									"branch": branch, 
-									"status": state
-								});
+				// Verify path still exists and is valid
+				$.get(getBaseUrl("/git/isGitDir?path=" + repoModel.get("path")), 
+					function success(data) {
+						if (data == "false") {
+							repoModel.set({
+								"branch": "ERROR", 
+								"status": "ERROR"
 							});
-					});
+							return;
+						}
+
+						$.get(getBaseUrl("/git/status?path=" + repoModel.get("path")), 
+							function success(statusStr) {
+								var status = eval("(" + statusStr + ")");
+
+								var state = "Unmodified";
+								for (key in status) {
+									if (status[key].length > 0) {
+										unmodified = false;
+
+										state = "Modified";
+
+										if (key == 'conflict') {
+											state = "Conflict";
+											break;
+										}
+									}
+								}								
+
+								// Get currently checked out branch
+								$.get(getBaseUrl("/git/branch/current?path=" + repoModel.get("path")),
+									function success(branch) {
+										repoModel.set({
+											"branch": branch, 
+											"status": state
+										});
+									});
+							});						
+					});				
 			}
 
 			/***************** MODAL ACTIONS *****************/
