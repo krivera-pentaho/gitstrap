@@ -155,7 +155,28 @@
 			</div>
 			<div class="modal-footer">
 				<a href="#" class="btn" data-dismiss="modal">Cancel</a>				
-				<a id="stage-changes-btn" href="#" class="btn btn-primary" data-dismiss="modal">Next</a>
+				<a id="stage-changes-next-btn" href="#" class="btn btn-primary" data-dismiss="modal">Next</a>
+			</div>
+		</div>
+
+		<div id="create-commit-modal" class="modal hide fade">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+				<h3>Create Commit</h3>
+			</div>
+			<div class="modal-body form-horizontal">
+				<div class="control-group">
+					<label id="commit-message-label" class="control-label" for="commit-message">Message</label>
+					<div class="controls">
+						<textarea id="commit-message"></textarea>
+					</div>
+				</div>
+
+			</div>
+			<div class="modal-footer">
+				<a href="#" class="btn" data-dismiss="modal">Cancel</a>
+				<a id="create-commit-back-btn" data-dismiss="modal" href="#" class="btn">Back</a>
+				<a id="create-commit-submit-btn" data-dismiss="modal" href="#" class="btn btn-primary edit">Submit</a>
 			</div>
 		</div>
 	</body>

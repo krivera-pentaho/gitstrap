@@ -63,9 +63,19 @@ require(['jquery'], function() {
 					var changesJson = eval("(" + data + ")");
 
 					// Staged
-					$(changesJson.staged).each(function(i, changeJson){
-						changes.addStagedChange(new Change(path, changeJson.file, 
-							changeJson.status, "staged"));
+					$(changesJson.staged).each(function(i, changeJson) {
+
+						var add = true;
+						$(changesJson.not_staged).each(function(i, unstagedChangeJson) {
+							if (changeJson.file == unstagedChangeJson.file) {
+								add = false;
+							}
+						});
+
+						if (add) {
+							changes.addStagedChange(new Change(path, changeJson.file, 
+								changeJson.status, "staged"));	
+						}
 					});
 
 					// Unstaged
@@ -205,8 +215,6 @@ require(['jquery'], function() {
 								var state = "Unmodified";
 								for (key in status) {
 									if (status[key].length > 0) {
-										unmodified = false;
-
 										state = "Modified";
 
 										if (key == 'conflict') {
@@ -350,7 +358,7 @@ require(['jquery'], function() {
 		});
 
 		// Init options on modal
-		$("#repo-info-modal, #repo-remove-confirm-modal, #stage-changes-modal").modal({
+		$("#repo-info-modal, #repo-remove-confirm-modal, #stage-changes-modal, #create-commit-modal").modal({
 			keyboard: true,
 			show: false
 		});
@@ -358,6 +366,12 @@ require(['jquery'], function() {
 		
 		// Bind click interactions on add repo button
 		$("#add-repo-btn").bind("click", showAddRepoModal);
+
+		// Bind click for next in wizard for creating a commit
+		$("#stage-changes-next-btn").bind("click", showCreateCommitModal);
+
+		// Bind click to return back to staging files
+		$("#create-commit-back-btn").bind("click", showStageChangesModal)
 
 		// Verifies that the data in the repo info modal are valid
 		function verifyRepoInfoModal() {
@@ -394,6 +408,14 @@ require(['jquery'], function() {
 
 		function showStageChangesModal() {
 			$("#stage-changes-modal").modal("show");
+		}
+
+		function showCreateCommitModal() {
+			$("#create-commit-modal")
+				.modal("show")
+				.find("INPUT, TEXTAREA")
+					.val("")
+					.text("");
 		}
 
 		var loadingModalShowing = false;
