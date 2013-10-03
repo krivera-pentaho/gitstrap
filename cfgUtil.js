@@ -4,7 +4,13 @@ var cfgPath = "/http/cfg/data.cfg";
 
 var read = exports.read = {
 	properties: function(serverDir) {
-		var file = fs.readFileSync(serverDir + cfgPath, 'utf8');
+		var file;
+		try {
+			file = fs.readFileSync(serverDir + cfgPath, 'utf8');
+		} catch (e)	{
+			write._commitCfg("repositories=[]", serverDir);
+			file = fs.readFileSync(serverDir + cfgPath, 'utf8');
+		}
 		return toJSON(file);
 	},
 
@@ -33,7 +39,11 @@ var write = exports.write = {
 
 	_commit: function(json, serverDir) {
 		var cfg = toCfgFile(json);
-		fs.writeFileSync(serverDir + cfgPath, cfg);
+		return _commitCfg(cfg);
+	},
+
+	_commitCfg: function(cfg, serverDir) {
+		return fs.writeFileSync(serverDir + cfgPath, cfg);
 	}
 };
 

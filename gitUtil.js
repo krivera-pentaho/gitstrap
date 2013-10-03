@@ -22,29 +22,32 @@ var getCurrentBranch = exports.getCurrentBranch = function(path, callback) {
 var getReferences = exports.getReferences = function(path, callback) {
 	git.references(path, function(references) {
 		git.remote.show(path, function(remotes) {
-			var blankIndex = remotes.indexOf('');
-			if (blankIndex > -1) {
-				remotes.splice(blankIndex, 1);
-			}
-			remotes.forEach(function(remote, key) {
-				git.remote.showBranches(path, remote, function(branches) {
-					if (branches.forEach) {
-						branches.forEach(function(branch, branchKey) {
-							var remoteBranch = "refs/remotes/" + remote + "/" + branch;
 
-							if (references.indexOf(remoteBranch) == -1) {
-								references.push(remoteBranch);
-							}
+			if (remotes.indexOf) {
+				var blankIndex = remotes.indexOf('');
+				if (blankIndex > -1) {
+					remotes.splice(blankIndex, 1);
+				}
+				remotes.forEach(function(remote, key) {
+					git.remote.showBranches(path, remote, function(branches) {
+						if (branches.forEach) {
+							branches.forEach(function(branch, branchKey) {
+								var remoteBranch = "refs/remotes/" + remote + "/" + branch;
 
-							if (key == remotes.length-1 && branchKey == branches.length-1) {
-								callback(references.toString());
-							}
-						})					
-					} else {
-						callback("error: Error retrieving branches");
-					}				
+								if (references.indexOf(remoteBranch) == -1) {
+									references.push(remoteBranch);
+								}
+
+								if (key == remotes.length-1 && branchKey == branches.length-1) {
+									callback(references.toString());
+								}
+							})					
+						} else {
+							callback("error: Error retrieving branches");
+						}				
+					});
 				});
-			});
+			}
 			
 			if (remotes.length == 0) {
 				callback(references.toString());
