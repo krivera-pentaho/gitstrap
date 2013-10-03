@@ -1,15 +1,22 @@
 var fs = require('fs');
 
-var cfgPath = "/http/cfg/data.cfg";
+var cfgPath = "/http/cfg/";
+var cfgFile = "data.cfg";
 
 var read = exports.read = {
 	properties: function(serverDir) {
 		var file;
 		try {
-			file = fs.readFileSync(serverDir + cfgPath, 'utf8');
+			file = fs.readFileSync(getFullPath(serverDir), 'utf8');
 		} catch (e)	{
+			// Create Directory
+			fs.mkdirSync(serverDir + cfgPath);
+
+			// Create the new file
 			write._commitCfg("repositories=[]", serverDir);
-			file = fs.readFileSync(serverDir + cfgPath, 'utf8');
+
+			// Read the file
+			file = fs.readFileSync(getFullPath(serverDir), 'utf8');
 		}
 		return toJSON(file);
 	},
@@ -39,13 +46,17 @@ var write = exports.write = {
 
 	_commit: function(json, serverDir) {
 		var cfg = toCfgFile(json);
-		return _commitCfg(cfg);
+		write._commitCfg(cfg, serverDir);
 	},
 
 	_commitCfg: function(cfg, serverDir) {
-		return fs.writeFileSync(serverDir + cfgPath, cfg);
+		fs.writeFileSync(getFullPath(serverDir), cfg);
 	}
 };
+
+function getFullPath(serverDir) {
+	return serverDir + cfgPath + cfgFile;
+}
 
 function toJSON(file) {
 	var arr = file.split("\n");

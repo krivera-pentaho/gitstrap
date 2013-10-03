@@ -75,6 +75,7 @@ server.post("/cfg/single", function(request, response) {
 	try {
 		cfgUtil.write.property(key, value, httpDir);	
 	} catch(e) {
+		console.log(e);
 		statusCode = 500;
 	}
 
