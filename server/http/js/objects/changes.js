@@ -40,6 +40,12 @@ define(["jquery", "underscore", "backbone"], function() {
 					case "untracked":
 						self.options.untrackedChanges.collection.add(ChangeModel); break;
 				}
+
+				if ($("#staged-changes TR").length == 0) {
+					$("#stage-changes-next-btn").hide();
+				} else {
+					$("#stage-changes-next-btn").show();
+				}
 			});
 		}
 	});

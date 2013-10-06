@@ -1116,6 +1116,34 @@ module.exports = (function() {
 			});
 		}
 	}
+
+	function stash(path, cmd, callback) {
+		if (repository(path)) {
+			exec('git stash ' + (cmd ? cmd : ""), function(err, stdout, stderr) {
+
+				if ((stdout) || stderr.indexOf('Switched') > -1) {
+					if (callback) {
+						process.chdir(back);
+						callback.call(this, {
+							message : (stdout)
+						});
+					}
+				} else if (err || stderr) {
+					console.log(err || stderr);
+					if (callback) {
+						process.chdir(back);
+						callback.call(this, {
+							error : err || stderr
+						});
+					}
+				}  
+			});
+		} else {
+			callback.call(this, {
+				error : 'Invalid repository'
+			});
+		}
+	}
 	
 	// public methods
 	return {
@@ -1139,7 +1167,8 @@ module.exports = (function() {
 		references : references,
 		diffNames : diffNames,
 		diff : diff,
-		rebase : rebase
+		rebase : rebase,
+		stash : stash
 	};
   
 })();

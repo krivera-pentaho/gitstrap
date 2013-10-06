@@ -152,13 +152,17 @@ var getStatus = exports.getStatus = function(path, callback) {
 }
 
 var rebase = exports.rebase = function(path, branch, rebaseFromBranch, callback) {
-	_switchAndMaintainBranch(path, branch, function(checkoutCallback) {
-		git.rebase(path, rebaseFromBranch, function(message) {
-			checkoutCallback(function(){
-				callback(JSON.stringify(message));
+	_stashAndPop(path, function(stashCallback) {
+		_switchAndMaintainBranch(path, branch, function(checkoutCallback) {
+			git.rebase(path, rebaseFromBranch, function(message) {
+				checkoutCallback(function() {
+					stashCallback(function() {
+						callback(JSON.stringify(message));
+					})					
+				});
 			});
 		});
-	})
+	});
 }
 
 var stageFiles = exports.stageFiles = function(path, files, callback) {
@@ -174,8 +178,14 @@ var unstageFiles = exports.unstageFiles = function(path, files, callback) {
 }
 
 var removeFiles = exports.removeFiles = function(path, files, callback) {
-	git.remove(path, files.split(","), function(err) {
-		callback(JSON.stringify(err));
+	git.remove(path, files.split(","), function(out) {
+		callback(JSON.stringify(out));
+	})
+}
+
+var stash = exports.stash = function(path, cmd, callback) {
+	git.stash(path, cmd, function(out){
+		callback(JSON.stringify(out));
 	})
 }
 
@@ -202,4 +212,12 @@ function _switchAndMaintainBranch(path, branch, action) {
 			});				
 		}
 	});
+}
+
+function _stashAndPop(path, action) {
+	git.stash(path, null, function() {
+		action(function(callback) {
+			git.stash(path, "pop", callback);
+		})		
+	})
 }

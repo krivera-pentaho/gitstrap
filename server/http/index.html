@@ -155,7 +155,7 @@
 			</div>
 			<div class="modal-footer">
 				<a href="#" class="btn" data-dismiss="modal">Cancel</a>				
-				<a id="stage-changes-next-btn" href="#" class="btn btn-primary" data-dismiss="modal">Next</a>
+				<a id="stage-changes-next-btn" href="#" class="btn btn-primary hide" data-dismiss="modal">Next</a>
 			</div>
 		</div>
 
@@ -169,6 +169,27 @@
 					<label id="commit-message-label" class="control-label" for="commit-message">Message</label>
 					<div class="controls">
 						<textarea id="commit-message"></textarea>
+					</div>
+				</div>
+
+				<div class="control-group">
+					<label id="jira-case-label" class="control-label" for="jira-case">Jira URL</label>
+					<div class="controls">
+						<input id="jira-case"></input>
+					</div>
+				</div>
+
+				<div class="control-group">
+					<label id="commit-branch-label" class="control-label" for="commit-branch">Commit To</label>
+					<div class="controls">
+						<select id="commit-branch"></select>
+					</div>
+				</div>
+
+				<div class="control-group">
+					<label id="push-branch-label" class="control-label" for="push-branch">Push?</label>
+					<div class="controls">
+						<input type="checkbox" id="push-branch"></input>
 					</div>
 				</div>
 

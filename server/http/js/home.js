@@ -74,7 +74,8 @@ require(['jquery'], function() {
 
 						if (add) {
 							changes.addStagedChange(new Change(path, changeJson.file, 
-								changeJson.status, "staged"));	
+								changeJson.status, "staged"));
+							$("#stage-changes-next-btn").show();
 						}
 					});
 
@@ -407,7 +408,13 @@ require(['jquery'], function() {
 		}
 
 		function showStageChangesModal() {
-			$("#stage-changes-modal").modal("show");
+			if ($("#staged-changes TR").length == 0) {
+				$("#stage-changes-next-btn").hide();
+			} else {
+				$("#stage-changes-next-btn").show();
+			}
+
+			return $("#stage-changes-modal").modal("show");
 		}
 
 		function showCreateCommitModal() {
