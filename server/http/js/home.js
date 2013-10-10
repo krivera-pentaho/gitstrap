@@ -175,10 +175,7 @@ require(['jquery'], function() {
 
 					// Create repository objects
 					$(reposJson).each(function(i, repoJson) {
-
-						var repo = new Repository(repoJson.path, repoJson.alias, getReferences, getChanges, 
-							showEditRepoModal, showRemoveRepoModal, showStageChangesModal, showLoading, hideLoading);					
-						repositories.add(repo);
+						repositories.add(makeRepository(repoJson.path, repoJson.alias));
 					});
 
 					hideLoading();
@@ -237,6 +234,11 @@ require(['jquery'], function() {
 					});				
 			}
 
+			function makeRepository(path, alias) {
+				return new Repository(path, alias, getReferences, getChanges, 
+							showEditRepoModal, showRemoveRepoModal, showStageChangesModal, showLoading, hideLoading);
+			}
+
 			/***************** MODAL ACTIONS *****************/
 			function repositoryAdd(alias, path, suppressAlert) {
 				// Verify that the repository path is a valid git directory
@@ -266,9 +268,8 @@ require(['jquery'], function() {
 											function success(branch) {
 												if (!suppressAlert) {
 													AlertBuilder.build("Repository Added", "SUCCESS", $("#alert-bar"));	
-												}
-												repositories.add(new Repository(path, alias, branch, getReferences, getChanges,
-													showEditRepoModal, showRemoveRepoModal, showStageChangesModal, showLoading, hideLoading));
+												}												
+												repositories.add(makeRepository(path, alias));
 											});
 									}).fail(function error() {
 										AlertBuilder.build("An error occured writing the configuration", "ERROR", $("#alert-bar"));
