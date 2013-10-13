@@ -373,7 +373,10 @@ require(['jquery'], function() {
 		$("#stage-changes-next-btn").bind("click", showCreateCommitModal);
 
 		// Bind click to return back to staging files
-		$("#create-commit-back-btn").bind("click", showStageChangesModal)
+		$("#create-commit-back-btn").bind("click", showStageChangesModal);
+
+		// Bind submission button for creating a commit
+		$("#create-commit-submit-btn").bind("click", submitCreateCommitRequest);
 
 		// Verifies that the data in the repo info modal are valid
 		function verifyRepoInfoModal() {
@@ -424,6 +427,43 @@ require(['jquery'], function() {
 				.find("INPUT, TEXTAREA")
 					.val("")
 					.text("");
+
+			$("#create-commit-modal").find()
+
+			$.get(getBaseUrl("/git/refs?path=") + $(".repository-object.active").attr("path"),
+				function(data) {
+					$("#commit-branch-loading").remove();
+
+					var refs = data.split(",");
+					var localBranches = "refs/heads/";
+					var optionTemplate = Handlebars.compile("<option>{{option}}</option>");
+					$(refs).each(function(i, ref) {						
+						if (ref.search(localBranches) > -1) {
+							$("#commit-branch").append(
+								optionTemplate({"option": ref.replace(localBranches, "")}));
+						}
+					});
+				});
+		}
+
+		function submitCreateCommitRequest() {
+			var commitMessage = $("#commit-message").val();
+			if (commitMessage == "") {
+				AlertBuilder.build("All input fields need to be completed.", "ERROR", $("#create-commit-modal .modal-body"));
+				return;
+			}
+
+			$.post(getBaseUrl("/git/commit"+
+				"?path=" + $(".repository-object.active").attr("path") +
+				"&branch=" + $("#commit-branch").val() +
+				"&message=" + commitMessage), 
+				function(data) {
+					$("#create-commit-modal").modal("hide");
+
+					if (data.search("error:") > -1) {
+						AlertBuilder.build("Error committing changes", "ERROR", $("#alert-bar"));
+					}
+				});
 		}
 
 		var loadingModalShowing = false;

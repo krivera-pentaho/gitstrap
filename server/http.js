@@ -248,6 +248,19 @@ server.post("/git/staging/unstage", function(request, response) {
 		response.end(err);
 	});
 })
+
+server.post("/git/commit", function(request, response) {
+	var queryData = url.parse(request.url, true).query;
+	var path = queryData.path;
+	var message = queryData.message;
+	var branch = queryData.branch;
+
+	gitUtil.commit(path, branch, message, function(data) {
+		response.writeHead(200);
+		response.end(data);
+	});
+});
+
 function readHttpFile(path, encoding, callback) {
 	var url = httpDir + "/http/" + path;
 	fs.readFile(url, encoding, callback);

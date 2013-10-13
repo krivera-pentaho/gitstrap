@@ -10,12 +10,14 @@ define(['AlertBuilder','jquery', 'backbone', 'handlebars'], function(AlertBuilde
 			"<div class='git-object repository-object img-rounded' data-toggle='context' data-target='#repository-object-context-menu'>"+
 				"<div class='title text-center' title='{{alias}}'>{{shortAlias}}</div>"+
 				"<div class='content'>"+
-					"<div class='{{statusClass}}'><strong>Status:</strong> {{status}}</div>"+
+					"<div class='{{statusClass}}'><strong>Status:</strong> {{{status}}}</div>"+
 					"<div><strong>Branch:</strong> {{branch}}</div>"+					
 					"<div title='{{path}}'><strong>Path:</strong> {{path}}</div>"+					
 					"{{content}}"+
 				"</div>"+
 			"</div>"),
+
+		loadingImgTemplate: "<img src='img/ajax-loader.gif'></img>",
 
 		render : function() {
 			var self = this;
@@ -29,6 +31,11 @@ define(['AlertBuilder','jquery', 'backbone', 'handlebars'], function(AlertBuilde
 
 			var attrs = this.model.attributes;
 			attrs.statusClass = statusClass;
+
+			// Use loading template
+			if (attrs.status == "") {
+				attrs.status = this.loadingImgTemplate;
+			}
 
 			attrs.shortAlias = attrs.alias;
 			if (attrs.shortAlias.length > 20) {

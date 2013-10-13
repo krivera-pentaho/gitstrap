@@ -189,6 +189,16 @@ var stash = exports.stash = function(path, cmd, callback) {
 	})
 }
 
+var commit = exports.commit = function(path, branch, message, callback) {
+	_switchAndMaintainBranch(path, branch, function(checkoutCallback) {
+		git.commit(path, message, function(data) {
+			checkoutCallback(function() {
+				callback(JSON.stringify(data));
+			});
+		})
+	})
+}
+
 function _switchAndMaintainBranch(path, branch, action) {
 	
 	// Get current branch
