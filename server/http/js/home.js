@@ -428,8 +428,6 @@ require(['jquery'], function() {
 					.val("")
 					.text("");
 
-			$("#create-commit-modal").find()
-
 			$.get(getBaseUrl("/git/refs?path=") + $(".repository-object.active").attr("path"),
 				function(data) {
 					$("#commit-branch-loading").remove();
@@ -453,6 +451,7 @@ require(['jquery'], function() {
 				return;
 			}
 
+			// Commit Changes
 			$.post(getBaseUrl("/git/commit"+
 				"?path=" + $(".repository-object.active").attr("path") +
 				"&branch=" + $("#commit-branch").val() +
@@ -462,6 +461,8 @@ require(['jquery'], function() {
 
 					if (data.search("error:") > -1) {
 						AlertBuilder.build("Error committing changes", "ERROR", $("#alert-bar"));
+					} else {
+						AlertBuilder.build("Commit Successful", "SUCCESS", $("#alert-bar"));
 					}
 				});
 		}

@@ -2,7 +2,9 @@ define(["jquery", "underscore", "backbone", "handlebars"], function() {
 	var Model = Backbone.Model.extend();
 
 	var View = Backbone.View.extend({
-		template: Handlebars.compile("<tr class='change-object {{state}}'><td>{{file}}</td></tr>"),
+		template: Handlebars.compile("<tr class='change-object {{state}}'><td>"+
+			"{{fileName}}"+
+			"<div class='full-file-path'>{{file}}</div></td></tr>"),
 
 		render: function(appendTo) {
 
@@ -14,8 +16,12 @@ define(["jquery", "underscore", "backbone", "handlebars"], function() {
 					state="error"; break;
 			}
 
+			var fullFile = this.model.get("file");
+			var fileName = fullFile.replace(new RegExp("(\\S+/)*").exec(fullFile)[0], "");
+
 			var attrs = this.model.attributes;
 			attrs.state = state;
+			attrs.fileName = fileName;
 			this.setElement(this.template(attrs));			
 
 			var self = this;
