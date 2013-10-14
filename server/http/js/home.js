@@ -110,6 +110,20 @@ require(['jquery'], function() {
 						});
 
 						hideLoading();
+
+						var container = $("#file-diffs-container");
+
+						container
+							.modal("show");
+						// 	.css("width", "90%")
+						// 	.css("left", "25%");
+						// // 	.css({
+						// // 		"left": container.width() / 2,
+						// // 		"width": "95%"
+						// // 	});
+
+						// // var left = ($(window).width() - container.width()) / 2;
+						// // container.css({"left": container.position().left + left})
 				});
 			}
 
@@ -360,7 +374,7 @@ require(['jquery'], function() {
 		});
 
 		// Init options on modal
-		$("#repo-info-modal, #repo-remove-confirm-modal, #stage-changes-modal, #create-commit-modal").modal({
+		$("#repo-info-modal, #repo-remove-confirm-modal, #stage-changes-modal, #create-commit-modal, #file-diffs-container").modal({
 			keyboard: true,
 			show: false
 		});
