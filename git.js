@@ -1059,8 +1059,8 @@ module.exports = (function() {
 		}
 	}
 
-	function diff(path, commitA, commitB, callback) {
-		var cmd = 'git diff ' + commitA + " " + commitB;
+	function diff(path, commitA, commitB, file, callback) {
+		var cmd = 'git diff ' + commitA + " " + commitB + (file ? " " + file : "");
 		if (repository(path)) {
 			exec(cmd, function(err, stdout, stderr) {
 				if (err || stderr) {

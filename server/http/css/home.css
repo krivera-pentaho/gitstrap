@@ -25,6 +25,7 @@
 
 .git-object .content {
 	padding: 4px;
+	text-align: left;
 }
 
 .git-object.active .title {

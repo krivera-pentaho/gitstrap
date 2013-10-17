@@ -82,7 +82,7 @@ var getDiffFile = exports.getDiffFile = function(path, branch, sha1, sha2, fileN
 	fileName = fileName.replace("\.", "\\.");
 
 	_switchAndMaintainBranch(path, branch, function(checkoutCallback) {
-		git.diff(path, sha1, sha2, function(fileDiffs) {		
+		git.diff(path, sha1, sha2, fileName, function(fileDiffs) {		
 			checkoutCallback(function() {
 				callback(JSON.stringify(_getHunks(fileName, fileDiffs)));
 			});
