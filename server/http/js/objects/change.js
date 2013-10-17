@@ -61,13 +61,8 @@ define(["jquery", "underscore", "backbone", "handlebars"], function() {
 
 					self.options.clearHunks();
 					$.get("/git/diff/uncommitted/file?path=" + path + "&fileName=" + file,
-						function success(data) {
-							function onHide() {
-								self.options.showStageChangesModal();
-								dialog.off(onHide);
-							}
-
-							var dialog = self.options.handleHunks(file, data).on("hidden", onHide);
+						function success(data) {							
+							var dialog = self.options.handleHunks(file, data).one("hidden", self.options.showStageChangesModal);
 							self.options.hideStageChangesModal();
 						})
 					return false;
