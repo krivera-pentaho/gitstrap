@@ -61,6 +61,10 @@ define(['AlertBuilder', 'jquery', 'handlebars', 'underscore', 'backbone'], funct
 							$this.addClass("active");
 														
 							self.options.getCommits(path, title, 10);
+
+							$("#selected-branch")
+								.empty()
+								.append($this.clone(true, true));
 						})												
 						.addClass(localReferenceClass);	
 				} else if (reference.search(remoteRef) > -1) {

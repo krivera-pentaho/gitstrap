@@ -98,6 +98,11 @@ define(['AlertBuilder','jquery', 'backbone', 'handlebars'], function(AlertBuilde
 
 					self.options.getReferences(alias, path);
 					$("#commit-history-container").hide();
+
+					$("#selected-repository")
+						.empty()
+						.append($this.clone(true, true));
+					$("#selected-items").show();
 				})				
 				.contextmenu({
 					onItem: function(e, item) {

@@ -19,14 +19,21 @@
 			<!-- Body -->
 			<div id="body-container" class="container-fluid">		
 				<div id="body" class="row-fluid">
-					<div id="nav" class="span2 text-center well">
-						<ul class="nav nav-pills nav-stacked">
-							<li id="home-nav" class="active"><a href="#">Home</a></li>							
+					<div id="nav" class="span2 text-center">
+						<ul class="nav nav-pills nav-stacked well">
+							<li id="home-nav" class="active"><a href="/">Home</a></li>
+							<li id="settings-nav" class="active"><a href="/">Settings</a></li>
 						</ul>
+
+						<div id="selected-items" class="well hide">
+							<div id="selected-repository"></div>
+							<div id="selected-branch"></div>
+						</div>
 					</div>
 
 					<div id="content" class="span10 text-left well">
-						<div id="alert-bar"></div>						
+						<div id="alert-bar"></div>
+						<div id="view-panel"></div>			
 						<a id="add-repo-btn" class='btn' href="#">Add Repository</a>
 
 						<div id="repository-objects-container" class="hide">
