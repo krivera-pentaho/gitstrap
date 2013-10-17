@@ -1088,6 +1088,35 @@ module.exports = (function() {
 		}
 	}
 
+	function diffFile(path, fileName, callback) {
+		var cmd = 'git diff ' + fileName;
+		if (repository(path)) {
+			exec(cmd, function(err, stdout, stderr) {
+				if (err || stderr) {
+					console.log(err || stderr);
+					if (callback) {
+						process.chdir(back);
+						callback.call(this, {
+							error : err || stderr
+						});
+					}
+				// all is good
+				} else {
+					var parseme = stdout.split('\n');
+					
+					if (callback) {						
+						callback.call(this, parseme);
+						process.chdir(back);
+					}
+				}
+			});
+		} else {
+			callback.call(this, {
+				error : 'Invalid repository'
+			});
+		}
+	}
+
 	function rebase(path, branch, callback) {
 		if (repository(path)) {
 			exec('git rebase ' + branch, function(err, stdout, stderr) {
@@ -1168,7 +1197,8 @@ module.exports = (function() {
 		diffNames : diffNames,
 		diff : diff,
 		rebase : rebase,
-		stash : stash
+		stash : stash,
+		diffFile : diffFile
 	};
   
 })();

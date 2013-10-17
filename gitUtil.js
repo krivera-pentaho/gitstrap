@@ -9,10 +9,6 @@ var isGitDir = exports.isGitDir = function(path) {
 	return dirContents.indexOf(".git") > -1;
 }
 
-var updateFromUpstream = exports.updateFromUpstream = function(path) {
-
-}
-
 var getCurrentBranch = exports.getCurrentBranch = function(path, callback) {
 	git.tree(path, function(tree) {
 		callback(tree.current);
@@ -86,53 +82,18 @@ var getDiffFile = exports.getDiffFile = function(path, branch, sha1, sha2, fileN
 	fileName = fileName.replace("\.", "\\.");
 
 	_switchAndMaintainBranch(path, branch, function(checkoutCallback) {
-		git.diff(path, sha1, sha2, function(fileDiffs) {
-
-			var fileFound = false;
-			var hunks = [];	
-			var hunk = [];
-			var start = false;	
-
-			fileDiffs.forEach(function(val, key) {
-				
-				if (val.search("diff --git") > -1) {					
-					fileFound = val.search(fileName) > -1;
-				}
-				
-				if (fileFound) {
-					
-					if (val.search("@@") > -1) {
-						
-						if (hunk.length > 0) {
-							hunks.push(hunk);
-						}
-						start = true;
-						hunk = [];
-						hunk.push(["", val]);
-						return;
-					}				
-
-					if (!start) {
-						return;
-					}
-
-					hunk.push([val.substr(0,1), val.substr(1)]);
-
-					if (key == fileDiffs.length - 1) {
-						hunks.push(hunk);
-					}
-
-				} else if (hunk.length > 0 ) {
-					hunks.push(hunk);
-					hunk = [];
-				}				
-			});
-
+		git.diff(path, sha1, sha2, function(fileDiffs) {		
 			checkoutCallback(function() {
-				callback(JSON.stringify(hunks));
+				callback(JSON.stringify(_getHunks(fileName, fileDiffs)));
 			});
 		});
 	});	
+}
+
+var getUncommittedFileDiff = exports.getUncommittedFileDiff = function(path, fileName, callback) {
+	git.diffFile(path, fileName, function(fileDiff) {
+		callback(JSON.stringify(_getHunks(fileName, fileDiff)));
+	})
 }
 
 var pull = exports.pull = function(path, pullToBranch, remote, branch, callback) {
@@ -230,4 +191,48 @@ function _stashAndPop(path, action) {
 			git.stash(path, "pop", callback);
 		})		
 	})
+}
+
+function _getHunks(fileName, fileDiffs) {
+	var fileFound = false;
+	var hunks = [];	
+	var hunk = [];
+	var start = false;	
+
+	fileDiffs.forEach(function(val, key) {
+		
+		if (val.search("diff --git") > -1) {					
+			fileFound = val.search(fileName) > -1;
+		}
+		
+		if (fileFound) {
+			
+			if (val.search("@@") > -1) {
+				
+				if (hunk.length > 0) {
+					hunks.push(hunk);
+				}
+				start = true;
+				hunk = [];
+				hunk.push(["", val]);
+				return;
+			}				
+
+			if (!start) {
+				return;
+			}
+
+			hunk.push([val.substr(0,1), val.substr(1)]);
+
+			if (key == fileDiffs.length - 1) {
+				hunks.push(hunk);
+			}
+
+		} else if (hunk.length > 0 ) {
+			hunks.push(hunk);
+			hunk = [];
+		}				
+	});
+
+	return hunks;
 }

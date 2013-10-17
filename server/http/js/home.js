@@ -43,6 +43,7 @@ require(['jquery'], function() {
 			
 			function clearHunks() {
 				hunks.clear();
+				$("#file-diffs-container").modal("hide");
 			}
 
 			function clearCommits() {
@@ -74,7 +75,7 @@ require(['jquery'], function() {
 
 						if (add) {
 							changes.addStagedChange(new Change(path, changeJson.file, 
-								changeJson.status, "staged"));
+								changeJson.status, "staged", handleHunks, showStageChangesModal, hideStageChangesModal, clearHunks));
 							$("#stage-changes-next-btn").show();
 						}
 					});
@@ -82,48 +83,54 @@ require(['jquery'], function() {
 					// Unstaged
 					$(changesJson.not_staged).each(function(i, changeJson){
 						changes.addUnstagedChange(new Change(path, changeJson.file, 
-							changeJson.status, "unstaged"));
+							changeJson.status, "unstaged", handleHunks, showStageChangesModal, hideStageChangesModal, clearHunks));
 					});
 
 					// Untracked
 					$(changesJson.untracked).each(function(i, changeFile){
 						changes.addUntrackedChange(new Change(path, changeFile, 
-							"new file", "untracked"));
+							"new file", "untracked", handleHunks, showStageChangesModal, hideStageChangesModal, clearHunks));
 					});
 				});
 			}
 
+			function handleHunks(fileName, httpResponse) {
+				hunks.model.set("fileName", fileName);
+				var hunksObj = eval("(" + httpResponse + ")");
+
+				$(hunksObj).each(function(i, lines){
+					hunks.add(new Hunk(lines));
+				});
+
+				hideLoading();
+
+				var container = $("#file-diffs-container");						
+				
+				container
+					.modal("show")
+					.css("width", "95%")
+					.css("height", "95%")
+					.offset({ 
+						left : ($(window).width() - container.width()) / 2,
+						top : (window.innerHeight - container.height()) / 2 + $(window).scrollTop() 
+					})
+					.find(".modal-body").css({
+						"max-height" : "none",
+						"height" : "88%"
+					});
+
+				return container;
+			}
+
 			function getFileDiff(path, branch, sha1, sha2, fileName) {
-				hunks.clear();
+				clearHunks();
 				showLoading();
 
 				$.get(getBaseUrl("/git/diff/file"+
 					"?path=" + path + "&branch="+ branch +
 					"&sha1=" + sha1+ "&sha2="+ sha2 +
 					"&fileName=" + fileName), function success(data) {
-						hunks.model.set("fileName", fileName);
-
-						var hunksObj = eval("(" + data + ")");
-
-						$(hunksObj).each(function(i, lines){
-							hunks.add(new Hunk(lines));
-						});
-
-						hideLoading();
-
-						var container = $("#file-diffs-container");
-
-						container
-							.modal("show");
-						// 	.css("width", "90%")
-						// 	.css("left", "25%");
-						// // 	.css({
-						// // 		"left": container.width() / 2,
-						// // 		"width": "95%"
-						// // 	});
-
-						// // var left = ($(window).width() - container.width()) / 2;
-						// // container.css({"left": container.position().left + left})
+					handleHunks(fileName, data);
 				});
 			}
 
@@ -433,6 +440,10 @@ require(['jquery'], function() {
 			}
 
 			return $("#stage-changes-modal").modal("show");
+		}
+
+		function hideStageChangesModal() {
+			return $("#stage-changes-modal").modal("hide");
 		}
 
 		function showCreateCommitModal() {

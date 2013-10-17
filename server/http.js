@@ -178,6 +178,18 @@ server.get("/git/diff/file", function(request, response) {
 	});
 })
 
+// Get the diff of an uncommited file with the latest commit
+server.get("/git/diff/uncommitted/file", function(request, response) {
+	var queryData = url.parse(request.url, true).query;
+	var path = queryData.path;
+	var fileName = queryData.fileName;
+
+	gitUtil.getUncommittedFileDiff(path, fileName, function(fileDiff) {
+		response.writeHead(200);
+		response.end(fileDiff);
+	});
+})
+
 // Pulls data from a remote resource
 server.post("/git/pull", function(request, response) {
 	var queryData = url.parse(request.url, true).query;

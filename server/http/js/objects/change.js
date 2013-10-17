@@ -2,7 +2,7 @@ define(["jquery", "underscore", "backbone", "handlebars"], function() {
 	var Model = Backbone.Model.extend();
 
 	var View = Backbone.View.extend({
-		template: Handlebars.compile("<tr class='change-object {{state}}'><td>"+
+		template: Handlebars.compile("<tr class='change-object {{state}}' title='Right-click for diff'><td>"+
 			"{{fileName}}"+
 			"<div class='full-file-path'>{{file}}</div></td></tr>"),
 
@@ -54,13 +54,30 @@ define(["jquery", "underscore", "backbone", "handlebars"], function() {
 					} else {
 						$.post("/git/staging/unstage?path=" + path + "&files=" + file, function success(data){})
 					}
+				})
+				.bind("contextmenu", function(event) {
+					var path = self.model.get("path");
+					var file = self.model.get("file");
+
+					self.options.clearHunks();
+					$.get("/git/diff/uncommitted/file?path=" + path + "&fileName=" + file,
+						function success(data) {
+							function onHide() {
+								self.options.showStageChangesModal();
+								dialog.off(onHide);
+							}
+
+							var dialog = self.options.handleHunks(file, data).on("hidden", onHide);
+							self.options.hideStageChangesModal();
+						})
+					return false;
 				});
 
 			return this;
 		}
 	});
 
-	return function(path, file, status, changeType, showLoading, hideLoading) {
+	return function(path, file, status, changeType, handleHunks, showStageChangesModal, hideStageChangesModal, clearHunks, showLoading, hideLoading) {
 		this.model = new Model({
 			path: path,
 			file: file,
@@ -69,9 +86,13 @@ define(["jquery", "underscore", "backbone", "handlebars"], function() {
 			origChangeType: changeType
 		});
 		this.view = new View({
-			model: this.model,
-			showLoading: showLoading,
-			hideLoading: hideLoading
+			model : this.model,
+			showLoading : showLoading,
+			hideLoading : hideLoading,
+			handleHunks : handleHunks,
+			showStageChangesModal : showStageChangesModal,
+			hideStageChangesModal : hideStageChangesModal,
+			clearHunks : clearHunks
 		});
 
 		this.model.view = this.view;
