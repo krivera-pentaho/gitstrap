@@ -15,13 +15,7 @@ define(['jquery', 'underscore', 'backbone'], function() {
 			// Bind on change
 			this.collection.on("change", function(repositoryModel) {
 				var view = repositoryModel.view;
-
-				var clearAll = view.$el.hasClass("active");
 				view.$el.replaceWith(view.render().$el);
-
-				if (clearAll) {
-					self.options.clear();	
-				}
 			});
 
 			// Bind on remove
@@ -39,13 +33,12 @@ define(['jquery', 'underscore', 'backbone'], function() {
 		}
 	});
 
-	return function($addToContainer, $wrapper, clear, RepositoryList) {
+	return function($addToContainer, $wrapper, RepositoryList) {
 		this.collection = new Collection();
 		this.view = new View({
 			collection: this.collection,
 			container: $addToContainer,
-			wrapper: $wrapper,
-			clear: clear
+			wrapper: $wrapper
 		});
 
 		var self = this;

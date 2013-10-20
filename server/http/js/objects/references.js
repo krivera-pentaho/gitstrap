@@ -1,21 +1,19 @@
 define(['jquery', 'handlebars', 'underscore', 'backbone'], function(){
 
-	var $localRefs = $("#local-references");
-	var localRef = "refs/heads/";
-
-	var $remoteRefs = $("#remote-references");
-	var remoteRef = "refs/remotes/"
-
-	var $tagRefs = $("#tag-references");
-	var tagRef = "refs/tags/"
-
-	var Collection = Backbone.Collection.extend({
-
-	});
+	var Collection = Backbone.Collection.extend();
 
 	var View = Backbone.View.extend({
 		initialize : function() {
 			var self = this;
+
+			var $localRefs = $("#local-references");
+			var localRef = "refs/heads/";
+
+			var $remoteRefs = $("#remote-references");
+			var remoteRef = "refs/remotes/"
+
+			var $tagRefs = $("#tag-references");
+			var tagRef = "refs/tags/"
 
 			// Bind on add actions
 			this.collection.on("add", function(ReferenceModel) {

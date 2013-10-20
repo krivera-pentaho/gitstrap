@@ -99,8 +99,7 @@ define(['AlertBuilder', 'jquery', 'handlebars', 'underscore', 'backbone'], funct
 						drop: function(event, ui) {
 
 							function disableSelection() {
-								if (self.$el.hasClass("active")){
-									self.options.clearCommits();
+								if (self.$el.hasClass("active")) {
 									self.$el.removeClass("active");
 								}
 							}
@@ -158,7 +157,7 @@ define(['AlertBuilder', 'jquery', 'handlebars', 'underscore', 'backbone'], funct
 		}
 	});
 
-	return function(reference, path, getCommits, clearCommits, showLoading, hideLoading) {
+	return function(reference, path, getCommits, showLoading, hideLoading) {
 		this.model = new Model({
 			reference: reference,
 			path: path,
@@ -168,7 +167,6 @@ define(['AlertBuilder', 'jquery', 'handlebars', 'underscore', 'backbone'], funct
 		this.view = new View({
 			model: this.model,
 			getCommits: getCommits,
-			clearCommits: clearCommits,
 			showLoading: showLoading, 
 			hideLoading: hideLoading
 		});

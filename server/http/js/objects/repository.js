@@ -96,13 +96,12 @@ define(['AlertBuilder','jquery', 'backbone', 'handlebars'], function(AlertBuilde
 						return;
 					}
 
-					self.options.getReferences(alias, path);
-					$("#commit-history-container").hide();
-
 					$("#selected-repository")
 						.empty()
 						.append($this.clone(true, true));
 					$("#selected-items").show();
+
+					self.options.onClick(self.$el);
 				})				
 				.contextmenu({
 					onItem: function(e, item) {
@@ -125,8 +124,8 @@ define(['AlertBuilder','jquery', 'backbone', 'handlebars'], function(AlertBuilde
 		}
 	});
 	
-	return function(path, alias, getReferences, getChanges, showEditRepoModal, 
-		showRemoveRepoModal, showStageChangesModal, showLoading, hideLoading) {		
+	return function(path, alias, getChanges, showEditRepoModal, 
+		showRemoveRepoModal, showStageChangesModal, showLoading, hideLoading, onClick) {		
 		this.model = new Model({
 			path: path,
 			alias: alias,
@@ -137,13 +136,13 @@ define(['AlertBuilder','jquery', 'backbone', 'handlebars'], function(AlertBuilde
 
 		this.view = new View({
 			model: this.model,
-			getReferences: getReferences,
 			getChanges: getChanges,
 			showEditRepoModal: showEditRepoModal,
 			showRemoveRepoModal: showRemoveRepoModal,
 			showStageChangesModal: showStageChangesModal,
 			showLoading: showLoading,
-			hideLoading: hideLoading
+			hideLoading: hideLoading,
+			onClick : onClick
 		});
 
 		this.model.view = this.view;

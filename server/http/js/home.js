@@ -11,10 +11,9 @@ require.config({
 	}
 });
 
-require(['jquery'], function() {
+require(['jquery', 'underscore'], function() {
 	require([
 		'AlertBuilder',
-		'underscore',
 		'handlebars', 
 		'jquery-ui', 
 		'bootstrap', 
@@ -32,10 +31,27 @@ require(['jquery'], function() {
 			'objects/hunks',
 			'objects/hunk',
 			'objects/changes',
-			'objects/change'], function(Repositories, Repository, References, Reference, Commits, Commit, Hunks, Hunk, Changes, Change) {	
+			'objects/change'], function(Repositories, Repository, References, Reference, Commits, Commit, Hunks, Hunk, Changes, Change) {
+
+				// Create Routes
+				require([
+					'router', 
+					'objects/repositoryRoute', 
+					'objects/referenceRoute'], function(Router, RepositoryRoute, ReferenceRoute) {
+						var router = new Router($("#view-panel"));
+						
+						// Repository Route
+						router.addRoute(new RepositoryRoute(showLoading, hideLoading, getChanges, 
+							showEditRepoModal, showRemoveRepoModal, showStageChangesModal));
+
+						// Reference Route
+						router.addRoute(new ReferenceRoute(showLoading, hideLoading, getCommits));
+
+						router.enable("repository-view");
+					});
 
 			/*************** Backbone Object Interactions ***************/
-			var repositories = new Repositories($("#repository-objects"), $("#repository-objects-container"), clear);
+			// var repositories = new Repositories($("#repository-objects"), $("#repository-objects-container"), clear);
 			var references = new References($("#repository-references-container"));
 			var commits = new Commits($("#commit-objects"), $("#commit-history-container"));
 			var hunks = new Hunks($("#file-diff-objects"), $("#file-diffs-container"))
@@ -163,97 +179,97 @@ require(['jquery'], function() {
 					});
 			}
 
-			// Retrieves references
-			function getReferences(alias, path) {
-				references.clear();
-				commits.clear();
-				hunks.clear();
+			// // Retrieves references
+			// function getReferences(alias, path) {
+			// 	references.clear();
+			// 	commits.clear();
+			// 	hunks.clear();
 
-				showLoading();
-				$.get(getBaseUrl("/git/refs?path=") + path, 
-					function success(data){
-						if (data.search("error:") > -1) {
-							AlertBuilder.build(data.replace("error: ", ""), "ERROR", $("#alert-bar"));
-							hideLoading();
-							return;
-						}
+			// 	showLoading();
+			// 	$.get(getBaseUrl("/git/refs?path=") + path, 
+			// 		function success(data){
+			// 			if (data.search("error:") > -1) {
+			// 				AlertBuilder.build(data.replace("error: ", ""), "ERROR", $("#alert-bar"));
+			// 				hideLoading();
+			// 				return;
+			// 			}
 
-						var refs = data.split(",");
+			// 			var refs = data.split(",");
 
-						$(refs).each(function(i, ref) {
-							references.add(new Reference(ref, path, getCommits, clearCommits, showLoading, hideLoading));
-						});
+			// 			$(refs).each(function(i, ref) {
+			// 				references.add(new Reference(ref, path, getCommits, clearCommits, showLoading, hideLoading));
+			// 			});
 
-						hideLoading();
-					});				
-			}
+			// 			hideLoading();
+			// 		});				
+			// }
 
-			// Start loading of repositories
-			showLoading();
-			$.get(getBaseUrl("/cfg/single?property=repositories"),
-				function success(data) {
-					var reposJson = eval("(" + data + ")");	
+			// // Start loading of repositories
+			// showLoading();
+			// $.get(getBaseUrl("/cfg/single?property=repositories"),
+			// 	function success(data) {
+			// 		var reposJson = eval("(" + data + ")");	
 
-					// Create repository objects
-					$(reposJson).each(function(i, repoJson) {
-						repositories.add(makeRepository(repoJson.path, repoJson.alias));
-					});
+			// 		// Create repository objects
+			// 		$(reposJson).each(function(i, repoJson) {
+			// 			repositories.add(makeRepository(repoJson.path, repoJson.alias));
+			// 		});
 
-					hideLoading();
-					autoRefreshRepositories();					
-				});
+			// 		hideLoading();
+			// 		autoRefreshRepositories();					
+			// 	});
 
-			function autoRefreshRepositories() {
-				repositories.each(function(repoModel) {
-					updateRepository(repoModel);
-				});
+			// function autoRefreshRepositories() {
+			// 	repositories.each(function(repoModel) {
+			// 		updateRepository(repoModel);
+			// 	});
 
-				setTimeout(autoRefreshRepositories, 10000);
-			}
+			// 	setTimeout(autoRefreshRepositories, 10000);
+			// }
 
-			function updateRepository(repoModel) {
-				if (loadingModalShowing) {
-					return;
-				}
+			// function updateRepository(repoModel) {
+			// 	if (loadingModalShowing) {
+			// 		return;
+			// 	}
 
-				// Verify path still exists and is valid
-				$.get(getBaseUrl("/git/isGitDir?path=" + repoModel.get("path")), 
-					function success(data) {
-						if (data == "false") {
-							repoModel.set({
-								"branch": "ERROR", 
-								"status": "ERROR"
-							});
-							return;
-						}
+			// 	// Verify path still exists and is valid
+			// 	$.get(getBaseUrl("/git/isGitDir?path=" + repoModel.get("path")), 
+			// 		function success(data) {
+			// 			if (data == "false") {
+			// 				repoModel.set({
+			// 					"branch": "ERROR", 
+			// 					"status": "ERROR"
+			// 				});
+			// 				return;
+			// 			}
 
-						$.get(getBaseUrl("/git/status?path=" + repoModel.get("path")), 
-							function success(statusStr) {
-								var status = eval("(" + statusStr + ")");
+			// 			$.get(getBaseUrl("/git/status?path=" + repoModel.get("path")), 
+			// 				function success(statusStr) {
+			// 					var status = eval("(" + statusStr + ")");
 
-								var state = "Unmodified";
-								for (key in status) {
-									if (status[key].length > 0) {
-										state = "Modified";
+			// 					var state = "Unmodified";
+			// 					for (key in status) {
+			// 						if (status[key].length > 0) {
+			// 							state = "Modified";
 
-										if (key == 'conflict') {
-											state = "Conflict";
-											break;
-										}
-									}
-								}								
+			// 							if (key == 'conflict') {
+			// 								state = "Conflict";
+			// 								break;
+			// 							}
+			// 						}
+			// 					}								
 
-								// Get currently checked out branch
-								$.get(getBaseUrl("/git/branch/current?path=" + repoModel.get("path")),
-									function success(branch) {
-										repoModel.set({
-											"branch": branch, 
-											"status": state
-										});
-									});
-							});						
-					});				
-			}
+			// 					// Get currently checked out branch
+			// 					$.get(getBaseUrl("/git/branch/current?path=" + repoModel.get("path")),
+			// 						function success(branch) {
+			// 							repoModel.set({
+			// 								"branch": branch, 
+			// 								"status": state
+			// 							});
+			// 						});
+			// 				});						
+			// 		});				
+			// }
 
 			function makeRepository(path, alias) {
 				return new Repository(path, alias, getReferences, getChanges, 
