@@ -21,7 +21,7 @@ require(['jquery', 'underscore'], function() {
 		'backbone'], function(AlertBuilder) {
 
 		// Create Routes
-		var makeRepository = null;
+		var addRepository = null;
 		require([
 			'router', 
 			'objects/repositoryRoute', 
@@ -35,10 +35,10 @@ require(['jquery', 'underscore'], function() {
 					});
 				
 				var repositoryRoute = new RepositoryRoute(showLoading, hideLoading, 
-					showEditRepoModal, showRemoveRepoModal, showStageChangesModal,
+					showAddRepoModal, showEditRepoModal, showRemoveRepoModal,
 					showStageChangesModal, hideStageChangesModal,
-					handleHunks, clearHunks);
-				makeRepository = repositoryRoute.makeRepository;
+					handleHunks, clearHunks);				
+				addRepository = repositoryRoute.addRepository;
 
 				// Repository Route
 				router.addRoute(repositoryRoute);
@@ -136,7 +136,7 @@ require(['jquery', 'underscore'], function() {
 											if (!suppressAlert) {
 												AlertBuilder.build("Repository Added", "SUCCESS", $("#alert-bar"));	
 											}												
-											repositories.add(makeRepository(path, alias));
+											addRepository(path, alias);
 										});
 								}).fail(function error() {
 									AlertBuilder.build("An error occured writing the configuration", "ERROR", $("#alert-bar"));
@@ -228,10 +228,6 @@ require(['jquery', 'underscore'], function() {
 			keyboard: true,
 			show: false
 		});
-
-		
-		// Bind click interactions on add repo button
-		$("#add-repo-btn").bind("click", showAddRepoModal);
 
 		// Bind click for next in wizard for creating a commit
 		$("#stage-changes-next-btn").bind("click", showCreateCommitModal);

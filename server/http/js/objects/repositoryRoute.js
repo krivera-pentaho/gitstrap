@@ -4,26 +4,33 @@ define(['route',
 	'objects/changes', 
 	'objects/change'], function(Route, Repositories, Repository, Changes, Change) {	
 
-	return function(showLoading, hideLoading,  showEditRepoModal, showRemoveRepoModal, showStageChangesModal, 
-		showStageChangesModal, hideStageChangesModal, handleHunks, clearHunks) {
+	return function(showLoading, hideLoading, showAddRepoModal, showEditRepoModal, showRemoveRepoModal, 
+		showStageChangesModal, hideStageChangesModal, handleHunks, clearHunks) {		
 
-		function makeRepository(path, alias) {
-			return new Repository(path, alias, getChanges,
+		var repositories = null;
+		var addRepository = function (path, alias) {			
+			var repository = new Repository(path, alias, getChanges,
 				showEditRepoModal, showRemoveRepoModal, showStageChangesModal, showLoading, hideLoading, onNext);
-		}
+			repositories.add(repository);
+
+			updateRepository(repository.model);
+		}; 
 
 		var onNext = function() {
 			route.router.enable("reference-route");
 		}
 
 		var onLoad = function($el) {
-			var repositories = new Repositories($("#repository-objects"), $("#repository-objects-container"));
+			repositories = new Repositories($("#repository-objects"), $("#repository-objects-container"));
 
 			// Remove any repositories that were previously selected
 			$("#selected-repository").empty();
 
 			// Remove any branches that were previously selected
 			$("#selected-branch").empty();
+
+			// Bind click interactions on add repo button
+			$("#add-repo-btn").bind("click", showAddRepoModal);
 
 			// Start loading of repositories
 			showLoading();
@@ -33,11 +40,11 @@ define(['route',
 
 					// Create repository objects
 					$(reposJson).each(function(i, repoJson) {
-						repositories.add(makeRepository(repoJson.path, repoJson.alias));
+						addRepository(repoJson.path, repoJson.alias);
 					});
 
 					hideLoading();
-					autoRefreshRepositories();					
+					// autoRefreshRepositories();					
 				});
 			
 			function autoRefreshRepositories() {
@@ -45,51 +52,51 @@ define(['route',
 					updateRepository(repoModel);
 				});
 
-				// setTimeout(autoRefreshRepositories, 10000);
-			}
+				setTimeout(autoRefreshRepositories, 10000);
+			}			
+		}
 
-			function updateRepository(repoModel) {
-				// if (loadingModalShowing) {
-				// 	return;
-				// }
+		function updateRepository(repoModel) {
+			// if (loadingModalShowing) {
+			// 	return;
+			// }
 
-				// Verify path still exists and is valid
-				$.get(getBaseUrl("/git/isGitDir?path=" + repoModel.get("path")), 
-					function success(data) {
-						if (data == "false") {
-							repoModel.set({
-								"branch": "ERROR", 
-								"status": "ERROR"
-							});
-							return;
-						}
+			// Verify path still exists and is valid
+			$.get(getBaseUrl("/git/isGitDir?path=" + repoModel.get("path")), 
+				function success(data) {
+					if (data == "false") {
+						repoModel.set({
+							"branch": "ERROR", 
+							"status": "ERROR"
+						});
+						return;
+					}
 
-						$.get("/git/status?path=" + repoModel.get("path"), 
-							function success(statusStr) {
-								var status = eval("(" + statusStr + ")");
+					$.get("/git/status?path=" + repoModel.get("path"), 
+						function success(statusStr) {
+							var status = eval("(" + statusStr + ")");
 
-								var state = "Unmodified";
-								for (key in status) {
-									if (status[key].length > 0) {
-										state = "Modified";
+							var state = "Unmodified";
+							for (key in status) {
+								if (status[key].length > 0) {
+									state = "Modified";
 
-										if (key == 'conflict') {
-											state = "Conflict";
-											break;
-										}
+									if (key == 'conflict') {
+										state = "Conflict";
+										break;
 									}
 								}
+							}
 
-								repoModel.set("status", state);
-							});						
+							repoModel.set("status", state);
+						});						
 
-						// Get currently checked out branch
-						$.get("/git/branch/current?path=" + repoModel.get("path"),
-							function success(branch) {
-								repoModel.set("branch", branch);									
-							});
-					});				
-			}
+					// Get currently checked out branch
+					$.get("/git/branch/current?path=" + repoModel.get("path"),
+						function success(branch) {
+							repoModel.set("branch", branch);									
+						});
+				});				
 		}
 
 		var changes = new Changes($("#staged-changes"), $("#unstaged-changes"), $("#untracked-changes"));
@@ -131,7 +138,7 @@ define(['route',
 		}
 
 		var route = new Route("repository-route", "partials/repositories.html", onLoad, onNext);
-		route.makeRepository = makeRepository;
+		route.addRepository = addRepository;
 
 		return route;
 	}

@@ -61,7 +61,7 @@ define(['AlertBuilder', 'jquery', 'handlebars', 'underscore', 'backbone'], funct
 							$this.siblings().removeClass("active");
 							$this.addClass("active");
 
-							if ($this.parent.attr("id") != "selected-branch") {
+							if ($this.parent().attr("id") != "selected-branch") {
 								$("#selected-branch")
 									.empty()
 									.append($this.clone(true, true));	
