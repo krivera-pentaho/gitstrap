@@ -106,7 +106,7 @@ define(['AlertBuilder', 'jquery', 'handlebars', 'underscore', 'backbone'], funct
 									self.$el.removeClass("active");
 								}
 							}
-							var $appendMessageTo = $("#repository-references-container .alert-container");
+							var $appendMessageTo = $("#alert-bar");
 
 							if (self.$el.hasClass(localReferenceClass)) {
 								if (ui.helper.hasClass(localReferenceClass)) {
