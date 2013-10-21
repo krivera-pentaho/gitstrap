@@ -52,7 +52,8 @@ require(['jquery', 'underscore'], function() {
 				router.enable("repository-route");
 
 				$("#home-nav").on("click", function() {
-					router.enable("repository-route");							
+					router.enable("repository-route", true);
+					history = [];						
 				})
 
 				$("#back-nav").on("click", function() {
@@ -64,7 +65,7 @@ require(['jquery', 'underscore'], function() {
 				})
 			});
 
-		// Backbone repository objects
+		// Require Hunk Objects objects
 		var handleHunks, clearHunks;
 		require(['objects/hunks','objects/hunk'], function(Hunks, Hunk) {
 
