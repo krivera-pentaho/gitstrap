@@ -97,3 +97,11 @@
 .hunk-objects.table .code-type {
 	text-align: center;
 }
+
+#stage-changes-modal .title {
+	float: left;
+}
+
+#stage-changes-modal .modal-body .btn {
+	float: right;
+}

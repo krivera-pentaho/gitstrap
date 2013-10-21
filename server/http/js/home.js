@@ -240,6 +240,13 @@ require(['jquery', 'underscore'], function() {
 		// Bind submission button for creating a commit
 		$("#create-commit-submit-btn").bind("click", submitCreateCommitRequest);
 
+		$("#stage-changes-modal .btn").on("click", function() {
+			$(this).next().find(".change-object").each(function(i, obj) {
+				$(obj).trigger("click");
+			});
+		});
+		//
+
 		// Verifies that the data in the repo info modal are valid
 		function verifyRepoInfoModal() {
 			var alias = $("#repo-alias").val();
@@ -301,6 +308,8 @@ require(['jquery', 'underscore'], function() {
 					var refs = data.split(",");
 					var localBranches = "refs/heads/";
 					var optionTemplate = Handlebars.compile("<option>{{option}}</option>");
+
+					$("#commit-branch").empty();
 					$(refs).each(function(i, ref) {						
 						if (ref.search(localBranches) > -1) {
 							$("#commit-branch").append(
@@ -315,6 +324,14 @@ require(['jquery', 'underscore'], function() {
 			if (commitMessage == "") {
 				AlertBuilder.build("All input fields need to be completed.", "ERROR", $("#create-commit-modal .modal-body"));
 				return;
+			}
+
+			while (commitMessage.search("\"") > -1) {
+				commitMessage = commitMessage.replace("\"", "");
+			}
+
+			while (commitMessage.search("\'") > -1) {
+				commitMessage = commitMessage.replace("\'", "");
 			}
 
 			// Commit Changes

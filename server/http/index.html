@@ -120,18 +120,21 @@
 			</div>
 			<div class="modal-body">
 				<div id="staged-changes-wrapper">
-					<h5>Staged for Commit</h5>
+					<h5 class="title">Staged for Commit</h5>
+					<button id="remove-all-staged-commits" class="btn">Remove All</button>
 					<table id="staged-changes" class="table table-hover table-bordered table-condensed well">
 					</table>
 				</div>
 
 				<div id="unstaged-changes-wrapper">
-					<h5>Unstaged Changes</h5>
+					<h5 class="title">Unstaged Changes</h5>
+					<button id="add-all-unstaged-commits" class="btn">Add All</button>
 					<table id="unstaged-changes" class="table table-hover table-bordered table-condensed well"></table>
 				</div>
 
 				<div id="untracked-changes-wrapper">
-					<h5>Untracked Changes</h5>
+					<h5 class="title">Untracked Changes</h5>
+					<button id="add-all-untracked-commits" class="btn">Add All</button>
 					<table id="untracked-changes" class="table table-hover table-bordered table-condensed well"></table>
 				</div>
 			</div>
