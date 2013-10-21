@@ -22,6 +22,7 @@ require(['jquery', 'underscore'], function() {
 
 		// Create Routes
 		var addRepository = null;
+		var removeRepository = null;
 		require([
 			'router', 
 			'objects/repositoryRoute', 
@@ -39,6 +40,7 @@ require(['jquery', 'underscore'], function() {
 					showStageChangesModal, hideStageChangesModal,
 					handleHunks, clearHunks);				
 				addRepository = repositoryRoute.addRepository;
+				removeRepository = repositoryRoute.removeRepository;
 
 				// Repository Route
 				router.addRoute(repositoryRoute);
@@ -171,7 +173,7 @@ require(['jquery', 'underscore'], function() {
 								AlertBuilder.build("Repository '" + alias + "' has been removed successfully", "SUCCESS", $("#alert-bar"));									
 							}
 							
-							repositories.remove(alias);
+							removeRepository(alias);
 
 							if (callback) {
 								callback();

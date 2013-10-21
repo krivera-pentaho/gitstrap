@@ -16,6 +16,10 @@ define(['route',
 			updateRepository(repository.model);
 		}; 
 
+		var removeRepository = function(alias) {
+			repositories.remove(alias);
+		}
+
 		var onNext = function() {
 			route.router.enable("reference-route");
 		}
@@ -139,6 +143,7 @@ define(['route',
 
 		var route = new Route("repository-route", "partials/repositories.html", onLoad, onNext);
 		route.addRepository = addRepository;
+		route.removeRepository = removeRepository;
 
 		return route;
 	}
