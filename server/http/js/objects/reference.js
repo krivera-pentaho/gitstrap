@@ -61,10 +61,12 @@ define(['AlertBuilder', 'jquery', 'handlebars', 'underscore', 'backbone'], funct
 							$this.siblings().removeClass("active");
 							$this.addClass("active");
 
-							$("#selected-branch")
-								.empty()
-								.append($this.clone(true, true));
-
+							if ($this.parent.attr("id") != "selected-branch") {
+								$("#selected-branch")
+									.empty()
+									.append($this.clone(true, true));	
+							}
+							
 							self.options.onClick(self.$el);
 						})												
 						.addClass(localReferenceClass);	

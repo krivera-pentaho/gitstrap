@@ -96,11 +96,12 @@ define(['AlertBuilder','jquery', 'backbone', 'handlebars'], function(AlertBuilde
 						return;
 					}
 
-					$("#selected-repository")
-						.empty()
-						.append($this.clone(true, true));
-					$("#selected-items").show();
-
+					if ($this.parent().attr("id") != "selected-repository") {
+						$("#selected-repository")
+							.empty()
+							.append($this.clone(true, true));	
+					}
+					
 					self.options.onClick(self.$el);
 				})				
 				.contextmenu({
