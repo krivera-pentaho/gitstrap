@@ -8,9 +8,9 @@ define(['jquery', 'backbone'], function() {
 			// Retrieve content
 			$.get(this.model.get("url"), function success(data) {
 				self.setElement(data);
-				callback.apply(self, self.$el);
+				callback.call(self, self.$el);
 
-				self.options.onLoad.apply(self, self.$el);
+				self.options.onLoad.call(self, self.$el);
 			});
 
 			return this;
@@ -22,7 +22,8 @@ define(['jquery', 'backbone'], function() {
 			id : view,
 			url : url,
 			view : view,
-			active : false
+			active : false,
+			deactivated : false
 		});
 
 		this.view = new View({
@@ -33,5 +34,9 @@ define(['jquery', 'backbone'], function() {
 		});
 
 		this.model.view = this.view;
+
+		this.onLoad = onLoad;
+		this.onNext = onNext;
+		this.onBack = onBack;
 	}
 });

@@ -1,17 +1,20 @@
 define(['route', 'objects/references', 'objects/reference'], function(Route, References, Reference) {
 
-	return function(showLoading, hideLoading, getCommits) {		
+	return function(showLoading, hideLoading) {		
 
 		var onBack = function() {
-			route.router.enable("repository-view");
+			route.router.enable("repository-route");
 		}
 
 		var onNext = function() {
-			route.router.enable("commit-view");
+			route.router.enable("commit-route");
 		}
 
-		var onLoad = function($el) {
+		var onLoad = function($el) {			
 			var references = new References($("#repository-references-container"));
+
+			// Remove any branches that were previously selected
+			$("#selected-branch").empty();
 
 			var $selectedRepository = $("#selected-repository .repository-object");
 			var alias = $selectedRepository.attr("alias");
@@ -19,7 +22,7 @@ define(['route', 'objects/references', 'objects/reference'], function(Route, Ref
 			
 			// Retrieves references
 			showLoading();
-			$.get(getBaseUrl("/git/refs?path=") + path, function success(data){
+			$.get("/git/refs?path=" + path, function success(data){
 				if (data.search("error:") > -1) {
 					AlertBuilder.build(data.replace("error: ", ""), "ERROR", $("#alert-bar"));
 					hideLoading();
@@ -29,7 +32,7 @@ define(['route', 'objects/references', 'objects/reference'], function(Route, Ref
 				var refs = data.split(",");
 
 				$(refs).each(function(i, ref) {
-					references.add(new Reference(ref, path, getCommits, showLoading, hideLoading));
+					references.add(new Reference(ref, path, showLoading, hideLoading, onNext));
 				});
 
 				hideLoading();

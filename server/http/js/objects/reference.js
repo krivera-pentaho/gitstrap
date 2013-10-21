@@ -45,6 +45,7 @@ define(['AlertBuilder', 'jquery', 'handlebars', 'underscore', 'backbone'], funct
 
 			var path = this.model.get("path");
 			this.$el
+				.attr("branch", branch)
 				.attr("reference", title)
 				.attr("path", path);
 
@@ -59,12 +60,12 @@ define(['AlertBuilder', 'jquery', 'handlebars', 'underscore', 'backbone'], funct
 
 							$this.siblings().removeClass("active");
 							$this.addClass("active");
-														
-							self.options.getCommits(path, title, 10);
 
 							$("#selected-branch")
 								.empty()
 								.append($this.clone(true, true));
+
+							self.options.onClick(self.$el);
 						})												
 						.addClass(localReferenceClass);	
 				} else if (reference.search(remoteRef) > -1) {
@@ -157,7 +158,7 @@ define(['AlertBuilder', 'jquery', 'handlebars', 'underscore', 'backbone'], funct
 		}
 	});
 
-	return function(reference, path, getCommits, showLoading, hideLoading) {
+	return function(reference, path, showLoading, hideLoading, onClick) {
 		this.model = new Model({
 			reference: reference,
 			path: path,
@@ -166,9 +167,9 @@ define(['AlertBuilder', 'jquery', 'handlebars', 'underscore', 'backbone'], funct
 
 		this.view = new View({
 			model: this.model,
-			getCommits: getCommits,
 			showLoading: showLoading, 
-			hideLoading: hideLoading
+			hideLoading: hideLoading,
+			onClick : onClick
 		});
 
 		this.model.view = this.view;

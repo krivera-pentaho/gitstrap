@@ -39,7 +39,7 @@ define(['jquery', 'jquery-ui', 'handlebars', 'underscore', 'backbone'], function
 					$this.siblings().removeClass("active");
 					$this.addClass("active");
 
-					self.options.clearHunks();
+					// self.options.clearHunks();
 
 					var sha1 = $this.next().attr("commit");
 					var sha2 = $this.attr("commit");
@@ -78,7 +78,7 @@ define(['jquery', 'jquery-ui', 'handlebars', 'underscore', 'backbone'], function
 									file: fullFile
 								}))
 								.bind("click", function(event) {
-									self.options.getFileDiff(path, branch, sha1, sha2, fullFile);
+									self.options.getFileDiff(sha1, sha2, fullFile);
 									event.stopPropagation();
 								});
 								diffNamesObject.append(diffNameObject);

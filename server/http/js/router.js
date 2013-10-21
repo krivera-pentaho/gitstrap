@@ -10,15 +10,40 @@ define(['jquery', 'backbone'], function() {
 		},
 		render : function(RouteView, entering) {
 			var self = this;
+
+			if (!entering) {
+				RouteView.$el
+					.hide("slide", {
+						easing : "easeInOutCubic",
+						direction : "left"
+					}, function() {
+						RouteView.$el.remove();
+						RouteView.model.set("deactivated", true);
+						RouteView.model.set("deactivated", false);
+					});
+				return;
+			}
+
 			RouteView.render(function($el) {
-				self.options.container.empty().append($el);	
+				self.options.container.append($el.hide());	
+
+				$el
+					// .css( { display : "inline-block" })
+					.show("slide", { 
+						easing : "easeInOutCubic",
+						direction : "right"
+					}, function() {
+						// RouteView.options.onLoad.call(self, self.$el);
+					});
 			});			
 		}
 	});
 
-	return function($viewContainer) {
+	return function($viewContainer, preActivate) {
 		this.collection = new Collection();
-		this.model = new Model();
+		this.model = new Model({
+			"active-route" : null
+		});
 		this.view = new View({
 			model : this.model,
 			collection : this.collection,
@@ -30,13 +55,38 @@ define(['jquery', 'backbone'], function() {
 			this.collection.add(Route.model);
 		}
 
-		this.enable = function(view) {
-			var activeRoute = this.model.get("active-route");
-			if (activeRoute) {
-				this.model.get(activeRoute).set("active", false);
+		this.enable = function(routeId, disablePreActivate) {
+			var self = this;
+
+			if (!routeId || this.model.get("active-route") == routeId) {
+				return;
 			}
 
-			this.collection.get(view).set("active", true);
+			var activeViewExists = false;
+			$(this.collection.models).each(function (i, RouteModel) {
+				if (RouteModel.get("active")) {
+					RouteModel.set("active", false);
+					activeViewExists = true;
+				}
+			});
+
+			function activate() {
+				if (preActivate && !disablePreActivate) {					
+					preActivate(this.model.get("active-route"), routeId);
+				}
+
+				this.collection.get(routeId).set("active", true);
+				this.model.set("active-route", routeId);				
+			}
+			
+			if (activeViewExists) {
+				this.collection.once("change:deactivated", function() {
+					activate.call(this);
+				}, this)
+				return;
+			}
+
+			activate.call(this);		
 		}
 	}
 });

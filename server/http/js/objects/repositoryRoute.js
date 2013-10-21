@@ -1,6 +1,16 @@
-define(['route', 'objects/repositories', 'objects/repository'], function(Route, Repositories, Repository) {	
+define(['route', 
+	'objects/repositories', 
+	'objects/repository', 
+	'objects/changes', 
+	'objects/change'], function(Route, Repositories, Repository, Changes, Change) {	
 
-	return function(showLoading, hideLoading, getChanges, showEditRepoModal, showRemoveRepoModal, showStageChangesModal) {
+	return function(showLoading, hideLoading,  showEditRepoModal, showRemoveRepoModal, showStageChangesModal, 
+		showStageChangesModal, hideStageChangesModal, handleHunks, clearHunks) {
+
+		function makeRepository(path, alias) {
+			return new Repository(path, alias, getChanges,
+				showEditRepoModal, showRemoveRepoModal, showStageChangesModal, showLoading, hideLoading, onNext);
+		}
 
 		var onNext = function() {
 			route.router.enable("reference-route");
@@ -8,6 +18,12 @@ define(['route', 'objects/repositories', 'objects/repository'], function(Route, 
 
 		var onLoad = function($el) {
 			var repositories = new Repositories($("#repository-objects"), $("#repository-objects-container"));
+
+			// Remove any repositories that were previously selected
+			$("#selected-repository").empty();
+
+			// Remove any branches that were previously selected
+			$("#selected-branch").empty();
 
 			// Start loading of repositories
 			showLoading();
@@ -23,12 +39,7 @@ define(['route', 'objects/repositories', 'objects/repository'], function(Route, 
 					hideLoading();
 					autoRefreshRepositories();					
 				});
-
-			function makeRepository(path, alias) {
-				return new Repository(path, alias, getChanges, 
-					showEditRepoModal, showRemoveRepoModal, showStageChangesModal, showLoading, hideLoading, onNext);
-			}
-
+			
 			function autoRefreshRepositories() {
 				repositories.each(function(repoModel) {
 					updateRepository(repoModel);
@@ -67,22 +78,61 @@ define(['route', 'objects/repositories', 'objects/repository'], function(Route, 
 											break;
 										}
 									}
-								}								
+								}
 
-								// Get currently checked out branch
-								$.get(getBaseUrl("/git/branch/current?path=" + repoModel.get("path")),
-									function success(branch) {
-										repoModel.set({
-											"branch": branch, 
-											"status": state
-										});
-									});
+								repoModel.set("status", state);
 							});						
+
+						// Get currently checked out branch
+						$.get("/git/branch/current?path=" + repoModel.get("path"),
+							function success(branch) {
+								repoModel.set("branch", branch);									
+							});
 					});				
 			}
 		}
 
-		var route = new Route("repository-view", "partials/repositories.html", onLoad, onNext);
+		var changes = new Changes($("#staged-changes"), $("#unstaged-changes"), $("#untracked-changes"));
+		function getChanges(path) {
+			changes.clear();
+
+			$.get("/git/status?path=" + path, function success(data) {
+				var changesJson = eval("(" + data + ")");
+
+				// Staged
+				$(changesJson.staged).each(function(i, changeJson) {
+
+					var add = true;
+					$(changesJson.not_staged).each(function(i, unstagedChangeJson) {
+						if (changeJson.file == unstagedChangeJson.file) {
+							add = false;
+						}
+					});
+
+					if (add) {
+						changes.addStagedChange(new Change(path, changeJson.file, 
+							changeJson.status, "staged", handleHunks, showStageChangesModal, hideStageChangesModal, clearHunks));
+						$("#stage-changes-next-btn").show();
+					}
+				});
+
+				// Unstaged
+				$(changesJson.not_staged).each(function(i, changeJson){
+					changes.addUnstagedChange(new Change(path, changeJson.file, 
+						changeJson.status, "unstaged", handleHunks, showStageChangesModal, hideStageChangesModal, clearHunks));
+				});
+
+				// Untracked
+				$(changesJson.untracked).each(function(i, changeFile){
+					changes.addUntrackedChange(new Change(path, changeFile, 
+						"new file", "untracked", handleHunks, showStageChangesModal, hideStageChangesModal, clearHunks));
+				});
+			});
+		}
+
+		var route = new Route("repository-route", "partials/repositories.html", onLoad, onNext);
+		route.makeRepository = makeRepository;
+
 		return route;
 	}
 })
