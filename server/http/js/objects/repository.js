@@ -11,7 +11,7 @@ define(['AlertBuilder','jquery', 'backbone', 'handlebars'], function(AlertBuilde
 				"<div class='title text-center' title='{{alias}}'>{{shortAlias}}</div>"+
 				"<div class='content'>"+
 					"<div class='{{statusClass}}'><strong>Status:</strong> {{{status}}}</div>"+
-					"<div><strong>Branch:</strong> {{branch}}</div>"+					
+					"<div><strong>Branch:</strong> {{{branch}}}</div>"+					
 					"<div title='{{path}}'><strong>Path:</strong> {{path}}</div>"+					
 					"{{content}}"+
 				"</div>"+
@@ -37,6 +37,10 @@ define(['AlertBuilder','jquery', 'backbone', 'handlebars'], function(AlertBuilde
 				attrs.status = this.loadingImgTemplate;
 			}
 
+			if (attrs.branch == "") {
+				attrs.branch = this.loadingImgTemplate;
+			}
+
 			attrs.shortAlias = attrs.alias;
 			if (attrs.shortAlias.length > 20) {
 				attrs.shortAlias = attrs.shortAlias.substr(0,20) + "...";
@@ -58,34 +62,7 @@ define(['AlertBuilder','jquery', 'backbone', 'handlebars'], function(AlertBuilde
 				.attr("alias", alias)
 				.attr("path", path)	
 				.attr("branch", branch)
-				.droppable({
-					accept: function(draggable){											
-						return path == draggable.attr("path") && 
-							draggable.attr("reference") != branch && 
-							draggable.hasClass("local-reference-object");
-					},
-					hoverClass: "ui-state-highlight",
-					drop: function(event, ui) { 
-						var droppedBranch = ui.helper.attr("reference");
-						ui.helper.attr("was-dropped", "true");
-						self.options.showLoading();
-						
-						// Checkout branch on drop
-						$.post(getBaseUrl("/git/branch/checkout" + "?path=" + path + "&branch=" + droppedBranch),							
-							function success(data) {
-								self.options.hideLoading();
-								var messageJSON = eval("(" + data + ")");
-
-								if (messageJSON.error.search("error:") > -1) {
-									AlertBuilder.build("Error switching branch (" + messageJSON.error + ")", "ERROR", $("#alert-bar"));
-									return;
-								}
-
-								self.model.set("branch", droppedBranch);							
-								AlertBuilder.build("Switched " + alias + " to " + droppedBranch, "SUCCESS", $("#alert-bar"));
-							});
-					}
-				})
+				
 				.bind("click contextmenu", function(event) {
 					var $this = $(this);
 
@@ -96,10 +73,40 @@ define(['AlertBuilder','jquery', 'backbone', 'handlebars'], function(AlertBuilde
 						return;
 					}
 
+					// Move repository object to selected repository objet container
 					if ($this.parent().attr("id") != "selected-repository") {
 						$("#selected-repository")
 							.empty()
-							.append($this.clone(true, true));	
+							.append($this.remove());
+							
+						$this.droppable({
+							accept: function(draggable){											
+								return path == draggable.attr("path") && 
+									draggable.attr("reference") != branch && 
+									draggable.hasClass("local-reference-object");
+							},
+							hoverClass: "ui-state-highlight",
+							drop: function(event, ui) { 
+								var droppedBranch = ui.helper.attr("reference");
+								ui.helper.attr("was-dropped", "true");
+								self.options.showLoading();
+								
+								// Checkout branch on drop
+								$.post(getBaseUrl("/git/branch/checkout" + "?path=" + path + "&branch=" + droppedBranch),							
+									function success(data) {
+										self.options.hideLoading();
+										var messageJSON = eval("(" + data + ")");
+
+										if (messageJSON.error.search("error:") > -1) {
+											AlertBuilder.build("Error switching branch (" + messageJSON.error + ")", "ERROR", $("#alert-bar"));
+											return;
+										}
+
+										self.model.set("branch", droppedBranch);							
+										AlertBuilder.build("Switched " + alias + " to " + droppedBranch, "SUCCESS", $("#alert-bar"));
+									});
+							}
+						});	
 					}
 					
 					self.options.onClick(self.$el);
