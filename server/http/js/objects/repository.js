@@ -77,39 +77,38 @@ define(['AlertBuilder','jquery', 'backbone', 'handlebars'], function(AlertBuilde
 					if ($this.parent().attr("id") != "selected-repository") {
 						$("#selected-repository")
 							.empty()
-							.append($this.remove());
-							
-						$this.droppable({
-							accept: function(draggable){											
-								return path == draggable.attr("path") && 
-									draggable.attr("reference") != branch && 
-									draggable.hasClass("local-reference-object");
-							},
-							hoverClass: "ui-state-highlight",
-							drop: function(event, ui) { 
-								var droppedBranch = ui.helper.attr("reference");
-								ui.helper.attr("was-dropped", "true");
-								self.options.showLoading();
-								
-								// Checkout branch on drop
-								$.post(getBaseUrl("/git/branch/checkout" + "?path=" + path + "&branch=" + droppedBranch),							
-									function success(data) {
-										self.options.hideLoading();
-										var messageJSON = eval("(" + data + ")");
-
-										if (messageJSON.error.search("error:") > -1) {
-											AlertBuilder.build("Error switching branch (" + messageJSON.error + ")", "ERROR", $("#alert-bar"));
-											return;
-										}
-
-										self.model.set("branch", droppedBranch);							
-										AlertBuilder.build("Switched " + alias + " to " + droppedBranch, "SUCCESS", $("#alert-bar"));
-									});
-							}
-						});	
+							.append($this);							
 					}
 					
 					self.options.onClick(self.$el);
+				})
+				.droppable({
+					accept: function(draggable){											
+						return path == draggable.attr("path") && 
+							draggable.attr("reference") != branch && 
+							draggable.hasClass("local-reference-object");
+					},
+					hoverClass: "ui-state-highlight",
+					drop: function(event, ui) { 
+						var droppedBranch = ui.helper.attr("reference");
+						ui.helper.attr("was-dropped", "true");
+						self.options.showLoading();
+						
+						// Checkout branch on drop
+						$.post(getBaseUrl("/git/branch/checkout" + "?path=" + path + "&branch=" + droppedBranch),							
+							function success(data) {
+								self.options.hideLoading();
+								var messageJSON = eval("(" + data + ")");
+
+								if (messageJSON.error.search("error:") > -1) {
+									AlertBuilder.build("Error switching branch (" + messageJSON.error + ")", "ERROR", $("#alert-bar"));
+									return;
+								}
+
+								self.model.set("branch", droppedBranch);							
+								AlertBuilder.build("Switched " + alias + " to " + droppedBranch, "SUCCESS", $("#alert-bar"));
+							});
+					}
 				})				
 				.contextmenu({
 					onItem: function(e, item) {
