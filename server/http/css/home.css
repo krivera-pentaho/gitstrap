@@ -105,3 +105,7 @@
 #stage-changes-modal .modal-body .btn {
 	float: right;
 }
+
+#settings .btn-bar {
+	text-align: right;
+}

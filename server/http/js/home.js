@@ -25,9 +25,10 @@ require(['jquery', 'underscore'], function() {
 		var removeRepository = null;
 		require([
 			'router', 
-			'objects/repositoryRoute', 
-			'objects/referenceRoute',
-			'objects/commitRoute'], function(Router, RepositoryRoute, ReferenceRoute, CommitRoute) {
+			'route/repositoryRoute', 
+			'route/referenceRoute',
+			'route/commitRoute',
+			'route/settingsRoute'], function(Router, RepositoryRoute, ReferenceRoute, CommitRoute, SettingsRoute) {
 				var history = [];
 
 				var router = new Router($("#view-panel"), 
@@ -51,6 +52,9 @@ require(['jquery', 'underscore'], function() {
 				// Commits Route
 				router.addRoute(new CommitRoute(showLoading, hideLoading, handleHunks, clearHunks));
 
+				//Settings Route
+				router.addRoute(new SettingsRoute(showLoading, hideLoading));
+
 				router.enable("repository-route");
 
 				$("#home-nav").on("click", function() {
@@ -64,7 +68,11 @@ require(['jquery', 'underscore'], function() {
 					if (routeId) {
 						router.enable(routeId, true);	
 					}					
-				})
+				});
+
+				$("#settings-nav").on("click", function() {
+					router.enable("settings-route");
+				});
 			});
 
 		// Require Hunk Objects objects
