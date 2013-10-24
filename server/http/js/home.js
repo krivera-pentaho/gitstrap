@@ -298,8 +298,12 @@ require(['jquery', 'underscore'], function() {
 			return $("#stage-changes-modal").modal("show");
 		}
 
-		function hideStageChangesModal() {
-			return $("#stage-changes-modal").modal("hide");
+		function hideStageChangesModal(onHide) {
+			return $("#stage-changes-modal")
+				.modal("hide")
+				.one("hidden", function() {
+					if (onHide) { onHide(); }
+				});
 		}
 
 		function showCreateCommitModal() {

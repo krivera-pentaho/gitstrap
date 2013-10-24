@@ -45,7 +45,7 @@ define(['AlertBuilder', 'jquery', 'handlebars', 'underscore', 'backbone'], funct
 
 			var path = this.model.get("path");
 			this.$el
-				.attr("branch", branch)
+				.attr("branch", (branch ? branch : remote))
 				.attr("reference", title)
 				.attr("path", path);
 

@@ -20,9 +20,9 @@ define(['jquery', 'jquery-ui', 'handlebars', 'underscore', 'backbone'], function
 			"<div class='git-object commit-object img-rounded'>"+
 				"<div class='title text-center' title='{{commit}}'>{{commit}}</div>"+
 				"<div class='content text-left'>"+
-					"<div><strong>Author: </strong> {{author}}</div>"+
-					"<div><strong>Date: </strong> {{date}}</div>"+
-					"<div><strong>Message: </strong> {{message}}</div>"+
+					"<div><strong>Author: </strong>{{author}}</div>"+
+					"<div><strong>Date: </strong>{{date}}</div>"+
+					"<div><strong>Message: </strong>{{message}}</div>"+
 				"</div>"+
 			"</div>"),
 		
@@ -78,8 +78,14 @@ define(['jquery', 'jquery-ui', 'handlebars', 'underscore', 'backbone'], function
 									file: fullFile
 								}))
 								.bind("click", function(event) {
-									self.options.getFileDiff(sha1, sha2, fullFile);
 									event.stopPropagation();
+
+									if (modification == "error" || modification == "success") {
+										return;
+									}
+
+									self.options.getFileDiff(sha1, sha2, fullFile);
+									
 								});
 								diffNamesObject.append(diffNameObject);
 							});

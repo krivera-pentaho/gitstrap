@@ -26,7 +26,7 @@ define(["jquery", "underscore", "backbone", "handlebars"], function() {
 
 			var self = this;
 			this.$el
-				.bind("click", function() {
+				.bind("click", function(event, callback) {
 					var changeType = self.model.get("changeType");
 					var origChangeType = self.model.get("origChangeType");
 					var status = self.model.get("status");
@@ -47,15 +47,32 @@ define(["jquery", "underscore", "backbone", "handlebars"], function() {
 					self.model.set("changeType", toChangeType);
 					if (toChangeType == "staged") {
 						if (status != "deleted") {
-							$.post("/git/staging/add?path=" + path + "&files=" + file, function success(data){})
+							$.post("/git/staging/add?path=" + path + "&files=" + file, function success(data) {
+								if (callback) { callback(event, true) };
+							})
 						} else {
-							$.post("/git/staging/remove?path=" + path + "&files=" + file, function success(data){})
+							$.post("/git/staging/remove?path=" + path + "&files=" + file, function success(data){
+								if (callback) { callback(event, true) };
+							})
 						}
 					} else {
-						$.post("/git/staging/unstage?path=" + path + "&files=" + file, function success(data){})
+						$.post("/git/staging/unstage?path=" + path + "&files=" + file, function success(data){
+							if (callback) { callback(event, true) };
+						})
 					}
 				})
-				.bind("contextmenu", function(event) {
+				.bind("contextmenu", function context(event, triggerClick) {
+					var status = self.model.get("status");
+					var changeType = self.model.get("changeType");
+					if (status == "new file" || status == "deleted") {
+						return false;
+					}
+
+					if (changeType == "staged") {
+						self.$el.trigger("click", [context]);
+						return false;
+					}
+
 					var path = self.model.get("path");
 					var file = self.model.get("file");
 
@@ -63,7 +80,14 @@ define(["jquery", "underscore", "backbone", "handlebars"], function() {
 					$.get("/git/diff/uncommitted/file?path=" + path + "&fileName=" + file,
 						function success(data) {							
 							var dialog = self.options.handleHunks(file, data).one("hidden", self.options.showStageChangesModal);
-							self.options.hideStageChangesModal();
+							self.options.hideStageChangesModal(
+								function() {
+									if (triggerClick) {
+										self.$el.trigger("click");
+									}
+								});
+
+							
 						})
 					return false;
 				});

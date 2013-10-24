@@ -2,8 +2,6 @@ define(['route', 'objects/commits', 'objects/commit'], function(Route, Commits, 
 
 	return function(showLoading, hideLoading, handleHunks, clearHunks) {
 
-		
-
 		var onLoad = function() {
 			var commits = new Commits($("#commit-objects"), $("#commit-history-container"));
 
