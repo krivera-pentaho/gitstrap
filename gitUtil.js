@@ -193,6 +193,10 @@ function _stashAndPop(path, action) {
 	})
 }
 
+function _addCredentialsToRemote(path, remote, user, pass) {
+
+}
+
 function _getHunks(fileName, fileDiffs) {
 	var fileFound = false;
 	var hunks = [];	

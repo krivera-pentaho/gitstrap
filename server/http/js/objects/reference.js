@@ -58,13 +58,15 @@ define(['AlertBuilder', 'jquery', 'handlebars', 'underscore', 'backbone'], funct
 								return;
 							}
 
-							$this.siblings().removeClass("active");
+							var $siblings = $this.siblings()
+							$siblings.removeClass("active");
 							$this.addClass("active");
 
 							if ($this.parent().attr("id") != "selected-branch") {
 								$("#selected-branch")
 									.empty()
-									.append($this.clone(true, true));	
+									.append($this)
+									.append($siblings.hide());	
 							}
 							
 							self.options.onClick(self.$el);
@@ -89,17 +91,24 @@ define(['AlertBuilder', 'jquery', 'handlebars', 'underscore', 'backbone'], funct
 						}
 					})
 					.droppable({
-						accept: function(draggable){
-							return (self.$el.hasClass(localReferenceClass) && 
-										draggable.hasClass("reference-object")) || 
-									(self.$el.hasClass(remoteReferenceClass) &&
-										draggable.hasClass(localReferenceClass));
+						accept : function(draggable){
+							var isLocal = self.$el.hasClass(localReferenceClass) && draggable.hasClass("reference-object");
+							var isRemote = self.$el.hasClass(remoteReferenceClass) && draggable.hasClass(localReferenceClass);
+							var isCommit = draggable.hasClass("commit-object");
+							return isLocal || isRemote || isCommit;
 
 						},
 
-						hoverClass: "ui-state-highlight",
+						hoverClass : "ui-state-highlight",
 
-						drop: function(event, ui) {
+						over : function(event, ui) {
+							if (ui.helper.hasClass("commit-object")) {
+								self.$el.siblings().show();
+							}
+							
+						},
+
+						drop : function(event, ui) {
 
 							function disableSelection() {
 								if (self.$el.hasClass("active")) {

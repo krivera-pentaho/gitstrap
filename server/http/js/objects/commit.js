@@ -34,6 +34,19 @@ define(['jquery', 'jquery-ui', 'handlebars', 'underscore', 'backbone'], function
 
 			this.$el
 				.attr("commit", this.model.get("commit"))
+
+				.draggable({ 
+					revert : true,
+					start: function(event, ui) {
+						ui.helper.css("z-index", 2);
+						ui.helper.attr("dragging", "true");
+					},
+					stop: function(event, ui) {
+						ui.helper.css("z-index", 0);
+						ui.helper.attr("dragging", "false");
+					}
+				})
+
 				.bind("click", function(){
 					$this = $(this);
 					$this.siblings().removeClass("active");
